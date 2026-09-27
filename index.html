@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pietro's ROSALÍA Tracker</title>
+  
+  <!-- Favicon Link -->
+  <link rel="icon" type="image/png" href="./favicon.png">
+
   <style>
     :root {
       --color-white: #ffffff;
       --color-red: #e60023;
       --spotify-green: #1db954;
       --text-sub: #d0d0d0;
-      /* Easing curve for smooth animations */
       --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -33,14 +36,59 @@
       padding: 1.5rem;
     }
 
-    /* 1. Background Blur Container Animation */
-    @keyframes fadeInBg {
-      from {
-        opacity: 0;
+    /* --- 1. Three Dots Loader --- */
+    .loader-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #0b0b0b;
+      z-index: 100;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loader-container.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .dots-loader {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dots-loader div {
+      width: 14px;
+      height: 14px;
+      background-color: var(--color-red);
+      border-radius: 50%;
+      animation: dotPulse 1.4s infinite ease-in-out both;
+    }
+
+    .dots-loader div:nth-child(1) { animation-delay: -0.32s; }
+    .dots-loader div:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes dotPulse {
+      0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.3;
       }
-      to {
+      40% {
+        transform: scale(1);
         opacity: 1;
       }
+    }
+
+    /* --- 2. Blurred Background Container --- */
+    @keyframes fadeInBg {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .bg-blur {
@@ -55,11 +103,14 @@
       transform: scale(1.2);
       z-index: -1;
       transition: background-image 0.5s ease;
-      /* Fades in from black over 0.5s */
+      opacity: 0;
+    }
+
+    .bg-blur.active {
       animation: fadeInBg 0.5s ease-out forwards;
     }
 
-    /* 2. Card Entrance Animation */
+    /* --- 3. Main Card Container --- */
     @keyframes fadeInUpCard {
       from {
         opacity: 0;
@@ -80,12 +131,16 @@
       width: 100%;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      /* Card starts after bg completes (0.5s delay) and takes 0.8s */
       opacity: 0;
-      animation: fadeInUpCard 0.8s var(--ease-smooth) 0.5s forwards;
+      display: none; /* Stays hidden until loader finishes */
     }
 
-    /* Small Cover Artwork */
+    .card.active {
+      display: block;
+      animation: fadeInUpCard 0.8s var(--ease-smooth) forwards;
+    }
+
+    /* Small Cover Artwork - NO DELAY, loads with card */
     .cover-art {
       width: 140px;
       height: 140px;
@@ -93,6 +148,7 @@
       margin: 0 auto 1.5rem;
       object-fit: cover;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      display: block;
     }
 
     /* Main Header / Display Text */
@@ -105,13 +161,8 @@
       transition: color 0.3s ease;
     }
 
-    .main-display.is-white {
-      color: var(--color-white);
-    }
-
-    .main-display.is-red {
-      color: var(--color-red);
-    }
+    .main-display.is-white { color: var(--color-white); }
+    .main-display.is-red { color: var(--color-red); }
 
     /* Button Styling */
     .spotify-btn {
@@ -154,7 +205,7 @@
       color: var(--spotify-green);
     }
 
-    /* 3. Staggered Content Entrance Animation */
+    /* Staggered Content Animation for Inner Items */
     @keyframes fadeInUpItem {
       from {
         opacity: 0;
@@ -168,41 +219,49 @@
 
     .animate-item {
       opacity: 0;
-      /* Takes 0.8s per piece for a unhurried effect */
       animation: fadeInUpItem 0.8s var(--ease-smooth) forwards;
     }
 
-    /* Sequenced Delays */
-    .delay-1 { animation-delay: 0.80s; } /* Cover image */
-    .delay-2 { animation-delay: 1.05s; } /* Main display text */
-    .delay-3 { animation-delay: 1.30s; } /* Button */
-    .delay-4 { animation-delay: 1.55s; } /* Footer sentence */
+    /* Sequenced Delays after card appears */
+    .delay-1 { animation-delay: 0.25s; } /* Main display text */
+    .delay-2 { animation-delay: 0.50s; } /* Button */
+    .delay-3 { animation-delay: 0.75s; } /* Footer sentence */
   </style>
 </head>
 <body>
 
+  <!-- Three Dots Loading Screen -->
+  <div id="loader" class="loader-container">
+    <div class="dots-loader">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+
   <!-- Background Blur Container -->
   <div id="bg-blur" class="bg-blur"></div>
 
-  <div class="card">
-    <!-- Small Cover Artwork -->
-    <img id="cover-art" class="cover-art animate-item delay-1" src="" alt="Album Art" style="display: none;" />
+  <!-- Main Display Card -->
+  <div id="main-card" class="card">
+    <!-- Small Cover Artwork (Loads with card, no delay) -->
+    <img id="cover-art" class="cover-art" src="" alt="Album Art" style="display: none;" />
 
     <!-- Main Counter Display -->
-    <h1 id="main-display" class="main-display is-white animate-item delay-2">Loading...</h1>
+    <h1 id="main-display" class="main-display is-white animate-item delay-1">...</h1>
 
     <!-- Action Button -->
     <a 
       href="https://open.spotify.com/artist/7ltDVBr6mKbRvohxheJ9h1?si=hGU9GP1URIy31v51-Cj7cQ" 
       target="_blank" 
       rel="noopener noreferrer" 
-      class="spotify-btn animate-item delay-3"
+      class="spotify-btn animate-item delay-2"
     >
       Listen to ROSALÍA now
     </a>
 
     <!-- Recorded Song Details Footer -->
-    <p id="track-info" class="track-info animate-item delay-4">
+    <p id="track-info" class="track-info animate-item delay-3">
       Fetching last recorded song...
     </p>
   </div>
@@ -213,7 +272,7 @@
         const response = await fetch('./last_played.json?cache=' + Date.now());
         const data = await response.json();
 
-        // 1. Set Album Art (Small Cover & Blurred Background)
+        // 1. Set Album Art for small cover & background
         if (data.album_art) {
           const img = document.getElementById('cover-art');
           img.src = data.album_art;
@@ -232,10 +291,9 @@
 
         const displayEl = document.getElementById('main-display');
 
-        // 3. Format Dynamic Main Text, Emojis & Color Rules
+        // 3. Format Main Text & Colors
         if (totalHours < 24) {
-          // Less than 24 hours -> STAY WHITE with 🙂‍↕️
-          displayEl.className = "main-display is-white animate-item delay-2";
+          displayEl.className = "main-display is-white animate-item delay-1";
 
           if (totalHours <= 1) {
             displayEl.innerText = "Pietro has listened to ROSALÍA within the past hour 🙂‍↕️";
@@ -243,15 +301,13 @@
             displayEl.innerText = `Pietro has listened to ROSALÍA within the past ${totalHours} hours 🙂‍↕️`;
           }
         } else {
-          // More than 24 hours -> TURN RED with 😱
-          displayEl.className = "main-display is-red animate-item delay-2";
+          displayEl.className = "main-display is-red animate-item delay-1";
 
           if (totalDays < 2) {
             displayEl.innerText = "Pietro hasn't been listening to ROSALÍA for longer than a day 😱";
           } else if (totalDays <= 6) {
             displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${totalDays} days 😱`;
           } else {
-            // Converts to weeks and months after 6 days
             const totalWeeks = Math.floor(totalDays / 7);
             const totalMonths = Math.floor(totalDays / 30);
 
@@ -265,7 +321,7 @@
           }
         }
 
-        // 4. Format Date and Time for the Footer Text
+        // 4. Format Date and Time
         const playedDate = new Date(data.timestamp);
         const formattedDate = playedDate.toLocaleDateString(undefined, {
           year: 'numeric',
@@ -277,11 +333,9 @@
           minute: '2-digit'
         });
 
-        // Fallbacks for track links if not explicitly present in JSON
         const trackUrl = data.spotify_url || `https://open.spotify.com/artist/7ltDVBr6mKbRvohxheJ9h1`;
         const albumUrl = data.album_url || trackUrl; 
 
-        // Update Footer Description with Pietro phrasing
         document.getElementById('track-info').innerHTML = 
           `The last recorded track listened by Pietro was '<a href="${trackUrl}" target="_blank" rel="noopener noreferrer">${data.track_name}</a>' ` +
           `from <a href="${albumUrl}" target="_blank" rel="noopener noreferrer">${data.album_name}</a> ` +
@@ -293,7 +347,21 @@
       }
     }
 
+    // Run initial data fetch
     updateTracker();
+
+    // Trigger 2-second loading animation delay before revealing card
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        // Hide three-dot loader
+        document.getElementById('loader').classList.add('hidden');
+        
+        // Fade in background and reveal card with cover art already rendered
+        document.getElementById('bg-blur').classList.add('active');
+        document.getElementById('main-card').classList.add('active');
+      }, 2000); // 2000 ms = 2 seconds
+    });
+
     // Refresh calculations every minute
     setInterval(updateTracker, 60000);
   </script>
