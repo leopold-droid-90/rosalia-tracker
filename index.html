@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pietro's ROSALÍA Tracker</title>
+  <title>ROSALÍA, how long has it been?</title>
   
   <!-- Favicon Link -->
   <link rel="icon" type="image/png" href="./favicon.png">
@@ -36,7 +36,27 @@
       padding: 1.5rem;
     }
 
-    /* --- 1. Three Dots Loader --- */
+    /* --- 1. Blurred Background Container (Loads immediately behind loader) --- */
+    @keyframes fadeInBg {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .bg-blur {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      filter: blur(20px) brightness(0.5);
+      transform: scale(1.2);
+      z-index: -1;
+      animation: fadeInBg 0.5s ease-out forwards;
+    }
+
+    /* --- 2. Three Dots Loader (White & Overlaying Blurred Background) --- */
     .loader-container {
       position: fixed;
       top: 0;
@@ -46,7 +66,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: #0b0b0b;
+      background: transparent;
       z-index: 100;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
@@ -66,8 +86,9 @@
     .dots-loader div {
       width: 14px;
       height: 14px;
-      background-color: var(--color-red);
+      background-color: var(--color-white); /* Changed to White */
       border-radius: 50%;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
       animation: dotPulse 1.4s infinite ease-in-out both;
     }
 
@@ -83,31 +104,6 @@
         transform: scale(1);
         opacity: 1;
       }
-    }
-
-    /* --- 2. Blurred Background Container --- */
-    @keyframes fadeInBg {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .bg-blur {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      filter: blur(20px) brightness(0.5);
-      transform: scale(1.2);
-      z-index: -1;
-      transition: background-image 0.5s ease;
-      opacity: 0;
-    }
-
-    .bg-blur.active {
-      animation: fadeInBg 0.5s ease-out forwards;
     }
 
     /* --- 3. Main Card Container --- */
@@ -230,7 +226,10 @@
 </head>
 <body>
 
-  <!-- Three Dots Loading Screen -->
+  <!-- Background Blur Container (Visible immediately behind loader) -->
+  <div id="bg-blur" class="bg-blur"></div>
+
+  <!-- Three Dots Loading Overlay -->
   <div id="loader" class="loader-container">
     <div class="dots-loader">
       <div></div>
@@ -238,9 +237,6 @@
       <div></div>
     </div>
   </div>
-
-  <!-- Background Blur Container -->
-  <div id="bg-blur" class="bg-blur"></div>
 
   <!-- Main Display Card -->
   <div id="main-card" class="card">
@@ -353,11 +349,10 @@
     // Trigger 2-second loading animation delay before revealing card
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
-        // Hide three-dot loader
+        // Hide white three-dot loader overlay
         document.getElementById('loader').classList.add('hidden');
         
-        // Fade in background and reveal card with cover art already rendered
-        document.getElementById('bg-blur').classList.add('active');
+        // Reveal card with cover art already rendered over the blurred background
         document.getElementById('main-card').classList.add('active');
       }, 2000); // 2000 ms = 2 seconds
     });
