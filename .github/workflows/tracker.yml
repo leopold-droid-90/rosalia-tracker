@@ -1,9 +1,9 @@
 name: Spotify ROSALIA Tracker
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'  # Automatically runs every 15 minutes
-  workflow_dispatch:          # Enables a manual trigger button in GitHub UI
+  repository_dispatch:
+    types: [check_spotify]   # Triggered by external cron service
+  workflow_dispatch:          # Manual trigger button in GitHub UI
 
 jobs:
   track:
@@ -30,7 +30,6 @@ jobs:
           const fs = require("fs");
 
           async function main() {
-            // 1. Get Access Token using Refresh Token
             const authHeader = Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString("base64");
             const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
               method: "POST",
@@ -49,7 +48,6 @@ jobs:
               process.exit(1);
             }
 
-            // 2. Fetch Recently Played Tracks from Spotify API
             const spotifyRes = await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=20", {
               headers: { "Authorization": `Bearer ${tokenData.access_token}` }
             });
@@ -60,7 +58,6 @@ jobs:
               return;
             }
 
-            // 3. Filter for ROSALÍA tracks
             const rosaliaTrack = spotifyData.items.find(item => 
               item.track.artists.some(artist => 
                 artist.name.toLowerCase().includes("rosalía") || 
@@ -89,7 +86,6 @@ jobs:
             const currentTimestamp = new Date(current.timestamp || 0).getTime();
             const newTimestamp = new Date(newEntry.timestamp).getTime();
 
-            // Only overwrite file if the track is strictly newer
             if (newTimestamp > currentTimestamp) {
               console.log("New ROSALÍA track detected! Updating last_played.json...");
               fs.writeFileSync("last_played.json", JSON.stringify(newEntry, null, 2));
