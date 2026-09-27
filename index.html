@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Since Last ROSALÍA Song</title>
+  <style>
+    :root {
+      --bg-color: #0b0b0b;
+      --card-bg: #161616;
+      --accent-color: #e60023;
+      --text-main: #ffffff;
+      --text-sub: #a0a0a0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .cover-art {
+      width: 140px;
+      height: 140px;
+      border-radius: 12px;
+      margin: 0 auto 1.5rem;
+      object-fit: cover;
+      box-shadow: 0 4px 15px rgba(230,0,35,0.2);
+    }
+    h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-sub);
+      margin: 0 0 0.5rem;
+    }
+    .timer {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent-color);
+      margin: 0.5rem 0 1.5rem;
+      letter-spacing: -0.5px;
+    }
+    .track-details {
+      font-size: 1rem;
+      color: var(--text-main);
+      margin-bottom: 1.5rem;
+    }
+    .spotify-link {
+      display: inline-block;
+      background: #1db954;
+      color: #000;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      transition: transform 0.2s;
+    }
+    .spotify-link:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img id="cover-art" class="cover-art" src="" alt="Album Art" style="display:none;" />
+    <h2>It has been</h2>
+    <div id="timer" class="timer">Loading...</div>
+    <div id="track-info" class="track-details">since last listening to ROSALÍA</div>
+    <a id="spotify-btn" class="spotify-link" href="#" target="_blank" style="display:none;">Listen on Spotify</a>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        const response = await fetch('./last_played.json?cache=' + Date.now());
+        const data = await response.json();
+
+        const lastPlayedTime = new Date(data.timestamp).getTime();
+
+        if (data.album_art) {
+          const img = document.getElementById('cover-art');
+          img.src = data.album_art;
+          img.style.display = 'block';
+        }
+
+        if (data.spotify_url) {
+          const btn = document.getElementById('spotify-btn');
+          btn.href = data.spotify_url;
+          btn.style.display = 'inline-block';
+        }
+
+        document.getElementById('track-info').innerHTML = 
+          `since listening to <strong>"${data.track_name}"</strong> from <em>${data.album_name}</em>`;
+
+        function refreshTimer() {
+          const now = new Date().getTime();
+          const diffMs = Math.max(0, now - lastPlayedTime);
+
+          const totalSeconds = Math.floor(diffMs / 1000);
+          const days = Math.floor(totalSeconds / (3600 * 24));
+          const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+          if (days > 0) {
+            document.getElementById('timer').innerText = `${days}d ${hours}h ${minutes}m`;
+          } else {
+            document.getElementById('timer').innerText = `${hours}h ${minutes}m`;
+          }
+        }
+
+        refreshTimer();
+        setInterval(refreshTimer, 30000); // Refresh UI every 30 seconds
+      } catch (err) {
+        document.getElementById('timer').innerText = "Error loading data";
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
