@@ -10,6 +10,8 @@
       --color-red: #e60023;
       --spotify-green: #1db954;
       --text-sub: #d0d0d0;
+      /* Easing curve for smooth animations */
+      --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     * {
@@ -31,7 +33,16 @@
       padding: 1.5rem;
     }
 
-    /* Blurred Background Image */
+    /* 1. Background Blur Container Animation */
+    @keyframes fadeInBg {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
     .bg-blur {
       position: fixed;
       top: 0;
@@ -44,6 +55,20 @@
       transform: scale(1.2);
       z-index: -1;
       transition: background-image 0.5s ease;
+      /* Fades in from black over 0.5s */
+      animation: fadeInBg 0.5s ease-out forwards;
+    }
+
+    /* 2. Card Entrance Animation */
+    @keyframes fadeInUpCard {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .card {
@@ -55,9 +80,12 @@
       width: 100%;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      /* Card starts after bg completes (0.5s delay) and takes 0.8s */
+      opacity: 0;
+      animation: fadeInUpCard 0.8s var(--ease-smooth) 0.5s forwards;
     }
 
-    /* Small Cover Artwork at top of card */
+    /* Small Cover Artwork */
     .cover-art {
       width: 140px;
       height: 140px;
@@ -122,16 +150,15 @@
       transition: color 0.2s ease;
     }
 
-    /* Spotify Green Hover Effect */
     .track-info a:hover {
       color: var(--spotify-green);
     }
 
-    /* Staggered Fade-in Animation Keyframes */
-    @keyframes fadeInUp {
+    /* 3. Staggered Content Entrance Animation */
+    @keyframes fadeInUpItem {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(25px);
       }
       to {
         opacity: 1;
@@ -140,15 +167,16 @@
     }
 
     .animate-item {
-      opacity: 0; /* Hidden until animation runs */
-      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      /* Takes 0.8s per piece for a unhurried effect */
+      animation: fadeInUpItem 0.8s var(--ease-smooth) forwards;
     }
 
-    /* Stagger delays per element */
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.25s; }
-    .delay-3 { animation-delay: 0.4s; }
-    .delay-4 { animation-delay: 0.55s; }
+    /* Sequenced Delays */
+    .delay-1 { animation-delay: 0.80s; } /* Cover image */
+    .delay-2 { animation-delay: 1.05s; } /* Main display text */
+    .delay-3 { animation-delay: 1.30s; } /* Button */
+    .delay-4 { animation-delay: 1.55s; } /* Footer sentence */
   </style>
 </head>
 <body>
