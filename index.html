@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ROSALÍA, how long has it been?</title>
+  <title>Pietro's ROSALÍA Tracker</title>
   
   <!-- Favicon Link -->
   <link rel="icon" type="image/png" href="./favicon.png">
@@ -86,7 +86,7 @@
     .dots-loader div {
       width: 14px;
       height: 14px;
-      background-color: var(--color-white); /* Changed to White */
+      background-color: var(--color-white);
       border-radius: 50%;
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
       animation: dotPulse 1.4s infinite ease-in-out both;
@@ -128,7 +128,7 @@
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
       opacity: 0;
-      display: none; /* Stays hidden until loader finishes */
+      display: none;
     }
 
     .card.active {
@@ -136,7 +136,7 @@
       animation: fadeInUpCard 0.8s var(--ease-smooth) forwards;
     }
 
-    /* Small Cover Artwork - NO DELAY, loads with card */
+    /* Small Cover Artwork */
     .cover-art {
       width: 140px;
       height: 140px;
@@ -219,14 +219,14 @@
     }
 
     /* Sequenced Delays after card appears */
-    .delay-1 { animation-delay: 0.25s; } /* Main display text */
-    .delay-2 { animation-delay: 0.50s; } /* Button */
-    .delay-3 { animation-delay: 0.75s; } /* Footer sentence */
+    .delay-1 { animation-delay: 0.25s; }
+    .delay-2 { animation-delay: 0.50s; }
+    .delay-3 { animation-delay: 0.75s; }
   </style>
 </head>
 <body>
 
-  <!-- Background Blur Container (Visible immediately behind loader) -->
+  <!-- Background Blur Container -->
   <div id="bg-blur" class="bg-blur"></div>
 
   <!-- Three Dots Loading Overlay -->
@@ -240,7 +240,7 @@
 
   <!-- Main Display Card -->
   <div id="main-card" class="card">
-    <!-- Small Cover Artwork (Loads with card, no delay) -->
+    <!-- Small Cover Artwork -->
     <img id="cover-art" class="cover-art" src="" alt="Album Art" style="display: none;" />
 
     <!-- Main Counter Display -->
@@ -282,36 +282,38 @@
         const now = new Date().getTime();
         const diffMs = Math.max(0, now - lastPlayedTime);
 
-        const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const totalDays = Math.floor(totalHours / 24);
+        const diffHoursExact = diffMs / (1000 * 60 * 60);
+        // Math.ceil rounds up partial hours (e.g. 7.5 hours -> 8 hours)
+        const displayHours = Math.ceil(diffHoursExact);
+        const displayDays = Math.ceil(diffHoursExact / 24);
 
         const displayEl = document.getElementById('main-display');
 
         // 3. Format Main Text & Colors
-        if (totalHours < 24) {
+        if (diffHoursExact < 24) {
           displayEl.className = "main-display is-white animate-item delay-1";
 
-          if (totalHours <= 1) {
+          if (displayHours <= 1) {
             displayEl.innerText = "Pietro has listened to ROSALÍA within the past hour 🙂‍↕️";
           } else {
-            displayEl.innerText = `Pietro has listened to ROSALÍA within the past ${totalHours} hours 🙂‍↕️`;
+            displayEl.innerText = `Pietro has listened to ROSALÍA within the past ${displayHours} hours 🙂‍↕️`;
           }
         } else {
           displayEl.className = "main-display is-red animate-item delay-1";
 
-          if (totalDays < 2) {
+          if (displayDays <= 2) {
             displayEl.innerText = "Pietro hasn't been listening to ROSALÍA for longer than a day 😱";
-          } else if (totalDays <= 6) {
-            displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${totalDays} days 😱`;
+          } else if (displayDays <= 6) {
+            displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${displayDays} days 😱`;
           } else {
-            const totalWeeks = Math.floor(totalDays / 7);
-            const totalMonths = Math.floor(totalDays / 30);
+            const displayWeeks = Math.ceil(displayDays / 7);
+            const displayMonths = Math.ceil(displayDays / 30);
 
-            if (totalMonths >= 1) {
-              const monthText = totalMonths === 1 ? "a month" : `${totalMonths} months`;
+            if (displayMonths >= 1) {
+              const monthText = displayMonths === 1 ? "a month" : `${displayMonths} months`;
               displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${monthText} 😱`;
             } else {
-              const weekText = totalWeeks === 1 ? "a week" : `${totalWeeks} weeks`;
+              const weekText = displayWeeks === 1 ? "a week" : `${displayWeeks} weeks`;
               displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${weekText} 😱`;
             }
           }
@@ -349,12 +351,9 @@
     // Trigger 2-second loading animation delay before revealing card
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
-        // Hide white three-dot loader overlay
         document.getElementById('loader').classList.add('hidden');
-        
-        // Reveal card with cover art already rendered over the blurred background
         document.getElementById('main-card').classList.add('active');
-      }, 2000); // 2000 ms = 2 seconds
+      }, 2000);
     });
 
     // Refresh calculations every minute
