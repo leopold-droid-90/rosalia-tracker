@@ -1,0 +1,114 @@
+name: Spotify ROSALIA Tracker
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Automatically runs every 15 minutes
+  workflow_dispatch:          # Enables a manual trigger button in GitHub UI
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch Spotify Data
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+        run: |
+          node -e '
+          const fs = require("fs");
+
+          async function main() {
+            // 1. Get Access Token using Refresh Token
+            const authHeader = Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString("base64");
+            const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
+              method: "POST",
+              headers: {
+                "Authorization": `Basic ${authHeader}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+              },
+              body: new URLSearchParams({
+                grant_type: "refresh_token",
+                refresh_token: process.env.SPOTIFY_REFRESH_TOKEN
+              })
+            });
+            const tokenData = await tokenRes.json();
+            if (!tokenData.access_token) {
+              console.error("Failed to refresh access token", tokenData);
+              process.exit(1);
+            }
+
+            // 2. Fetch Recently Played Tracks from Spotify API
+            const spotifyRes = await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=20", {
+              headers: { "Authorization": `Bearer ${tokenData.access_token}` }
+            });
+            const spotifyData = await spotifyRes.json();
+
+            if (!spotifyData.items || spotifyData.items.length === 0) {
+              console.log("No recently played tracks found.");
+              return;
+            }
+
+            // 3. Filter for ROSALÍA tracks
+            const rosaliaTrack = spotifyData.items.find(item => 
+              item.track.artists.some(artist => 
+                artist.name.toLowerCase().includes("rosalía") || 
+                artist.name.toLowerCase().includes("rosalia")
+              )
+            );
+
+            if (!rosaliaTrack) {
+              console.log("No ROSALÍA track found in recent list.");
+              return;
+            }
+
+            const newEntry = {
+              timestamp: rosaliaTrack.played_at,
+              track_name: rosaliaTrack.track.name,
+              album_name: rosaliaTrack.track.album.name,
+              album_art: rosaliaTrack.track.album.images[0]?.url || "",
+              spotify_url: rosaliaTrack.track.external_urls.spotify
+            };
+
+            let current = {};
+            if (fs.existsSync("last_played.json")) {
+              current = JSON.parse(fs.readFileSync("last_played.json", "utf8"));
+            }
+
+            const currentTimestamp = new Date(current.timestamp || 0).getTime();
+            const newTimestamp = new Date(newEntry.timestamp).getTime();
+
+            // Only overwrite file if the track is strictly newer
+            if (newTimestamp > currentTimestamp) {
+              console.log("New ROSALÍA track detected! Updating last_played.json...");
+              fs.writeFileSync("last_played.json", JSON.stringify(newEntry, null, 2));
+            } else {
+              console.log("Latest ROSALÍA track is already recorded.");
+            }
+          }
+
+          main().catch(err => {
+            console.error(err);
+            process.exit(1);
+          });
+          '
+
+      - name: Commit & Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add last_played.json
+          git status
+          git diff-index --quiet HEAD || git commit -m "update last_played.json [skip ci]"
+          git push
