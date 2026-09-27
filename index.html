@@ -8,6 +8,7 @@
     :root {
       --color-white: #ffffff;
       --color-red: #e60023;
+      --spotify-green: #1db954;
       --text-sub: #d0d0d0;
     }
 
@@ -40,7 +41,7 @@
       background-size: cover;
       background-position: center;
       filter: blur(20px) brightness(0.5);
-      transform: scale(1.2); /* Prevents white edges from high blur */
+      transform: scale(1.2);
       z-index: -1;
       transition: background-image 0.5s ease;
     }
@@ -54,6 +55,16 @@
       width: 100%;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Small Cover Artwork at top of card */
+    .cover-art {
+      width: 140px;
+      height: 140px;
+      border-radius: 12px;
+      margin: 0 auto 1.5rem;
+      object-fit: cover;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     }
 
     /* Main Header / Display Text */
@@ -111,9 +122,33 @@
       transition: color 0.2s ease;
     }
 
+    /* Spotify Green Hover Effect */
     .track-info a:hover {
-      color: var(--color-red);
+      color: var(--spotify-green);
     }
+
+    /* Staggered Fade-in Animation Keyframes */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-item {
+      opacity: 0; /* Hidden until animation runs */
+      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Stagger delays per element */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.25s; }
+    .delay-3 { animation-delay: 0.4s; }
+    .delay-4 { animation-delay: 0.55s; }
   </style>
 </head>
 <body>
@@ -122,21 +157,24 @@
   <div id="bg-blur" class="bg-blur"></div>
 
   <div class="card">
+    <!-- Small Cover Artwork -->
+    <img id="cover-art" class="cover-art animate-item delay-1" src="" alt="Album Art" style="display: none;" />
+
     <!-- Main Counter Display -->
-    <h1 id="main-display" class="main-display is-white">Loading...</h1>
+    <h1 id="main-display" class="main-display is-white animate-item delay-2">Loading...</h1>
 
     <!-- Action Button -->
     <a 
       href="https://open.spotify.com/artist/7ltDVBr6mKbRvohxheJ9h1?si=hGU9GP1URIy31v51-Cj7cQ" 
       target="_blank" 
       rel="noopener noreferrer" 
-      class="spotify-btn"
+      class="spotify-btn animate-item delay-3"
     >
       Listen to ROSALÍA now
     </a>
 
     <!-- Recorded Song Details Footer -->
-    <p id="track-info" class="track-info">
+    <p id="track-info" class="track-info animate-item delay-4">
       Fetching last recorded song...
     </p>
   </div>
@@ -147,8 +185,12 @@
         const response = await fetch('./last_played.json?cache=' + Date.now());
         const data = await response.json();
 
-        // 1. Set Blurred Background Image
+        // 1. Set Album Art (Small Cover & Blurred Background)
         if (data.album_art) {
+          const img = document.getElementById('cover-art');
+          img.src = data.album_art;
+          img.style.display = 'block';
+
           document.getElementById('bg-blur').style.backgroundImage = `url('${data.album_art}')`;
         }
 
@@ -162,24 +204,24 @@
 
         const displayEl = document.getElementById('main-display');
 
-        // 3. Format Dynamic Main Text & Color Rules
+        // 3. Format Dynamic Main Text, Emojis & Color Rules
         if (totalHours < 24) {
-          // Less than 24 hours -> STAY WHITE
-          displayEl.className = "main-display is-white";
+          // Less than 24 hours -> STAY WHITE with 🙂‍↕️
+          displayEl.className = "main-display is-white animate-item delay-2";
 
           if (totalHours <= 1) {
-            displayEl.innerText = "Pietro has listened to ROSALÍA within the past hour";
+            displayEl.innerText = "Pietro has listened to ROSALÍA within the past hour 🙂‍↕️";
           } else {
-            displayEl.innerText = `Pietro has listened to ROSALÍA within the past ${totalHours} hours`;
+            displayEl.innerText = `Pietro has listened to ROSALÍA within the past ${totalHours} hours 🙂‍↕️`;
           }
         } else {
-          // More than 24 hours -> TURN RED
-          displayEl.className = "main-display is-red";
+          // More than 24 hours -> TURN RED with 😱
+          displayEl.className = "main-display is-red animate-item delay-2";
 
           if (totalDays < 2) {
-            displayEl.innerText = "Pietro hasn't been listening to ROSALÍA for longer than a day";
+            displayEl.innerText = "Pietro hasn't been listening to ROSALÍA for longer than a day 😱";
           } else if (totalDays <= 6) {
-            displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${totalDays} days`;
+            displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${totalDays} days 😱`;
           } else {
             // Converts to weeks and months after 6 days
             const totalWeeks = Math.floor(totalDays / 7);
@@ -187,10 +229,10 @@
 
             if (totalMonths >= 1) {
               const monthText = totalMonths === 1 ? "a month" : `${totalMonths} months`;
-              displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${monthText}`;
+              displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${monthText} 😱`;
             } else {
               const weekText = totalWeeks === 1 ? "a week" : `${totalWeeks} weeks`;
-              displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${weekText}`;
+              displayEl.innerText = `Pietro hasn't been listening to ROSALÍA for longer than ${weekText} 😱`;
             }
           }
         }
@@ -211,9 +253,9 @@
         const trackUrl = data.spotify_url || `https://open.spotify.com/artist/7ltDVBr6mKbRvohxheJ9h1`;
         const albumUrl = data.album_url || trackUrl; 
 
-        // Update Footer Description
+        // Update Footer Description with Pietro phrasing
         document.getElementById('track-info').innerHTML = 
-          `The last recorded track was '<a href="${trackUrl}" target="_blank" rel="noopener noreferrer">${data.track_name}</a>' ` +
+          `The last recorded track listened by Pietro was '<a href="${trackUrl}" target="_blank" rel="noopener noreferrer">${data.track_name}</a>' ` +
           `from <a href="${albumUrl}" target="_blank" rel="noopener noreferrer">${data.album_name}</a> ` +
           `on ${formattedDate} at ${formattedTime}.`;
 
