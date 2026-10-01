@@ -1,21 +1,21 @@
 {
-  "current_streak": 1,
+  "current_streak": 2,
   "longest_streak": {
     "count": 2,
-    "start_date": "2026-09-27",
-    "end_date": "2026-09-28"
+    "start_date": "2026-09-30",
+    "end_date": "2026-10-01"
   },
   "peak_volume": {
     "count": 20,
     "date": "2026-09-30"
   },
   "latest_track": {
-    "timestamp": "2026-09-30T20:47:24.114Z",
-    "track_name": "Memória",
-    "album_name": "LUX",
-    "album_art": "https://i.scdn.co/image/ab67616d0000b27393ee2e2f2dfb7de9befcc164",
-    "spotify_url": "https://open.spotify.com/track/4ukpy7Q6QmrB7ttNMSAcG2",
-    "album_url": "https://open.spotify.com/album/3SUEJULSGgBDG1j4GQhfYY"
+    "timestamp": "2026-10-01T09:28:59.517Z",
+    "track_name": "Sexo, Violencia y Llantas",
+    "album_name": "LUX (Complete Works)",
+    "album_art": "https://i.scdn.co/image/ab67616d0000b2732b497f6bf340faa8812b940c",
+    "spotify_url": "https://open.spotify.com/track/3tkwOzZXgstU1DdH4gpaw1",
+    "album_url": "https://open.spotify.com/album/3goLwu2fkSSmghikOcVufU"
   },
   "tracked_timestamps": [
     "2026-09-30T20:47:24.114Z",
@@ -64,6 +64,8 @@
     "2026-09-27T11:24:05.979Z",
     "2026-09-27T11:20:20.108Z",
     "2026-09-27T11:17:01.979Z",
-    "2026-09-27T11:07:40.611Z"
+    "2026-09-27T11:07:40.611Z",
+    "2026-10-01T09:28:59.517Z",
+    "2026-10-01T09:26:43.393Z"
   ]
 }
