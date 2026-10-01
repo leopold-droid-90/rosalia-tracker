@@ -27,6 +27,7 @@
       overflow-x: hidden; padding: 1.5rem;
     }
 
+    /* Disable background page scroll when modal is open */
     body.modal-open { overflow: hidden !important; }
 
     .bg-blur {
@@ -57,19 +58,31 @@
       40% { transform: scale(1); opacity: 1; }
     }
 
+    /* CARD CONTAINER */
     .card {
       background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 24px; padding: 2.2rem 1.8rem;
       max-width: 480px; width: 100%; text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-      display: none; opacity: 0;
+      display: none; opacity: 0; z-index: 10;
     }
     .card.active { display: block; animation: fadeInUp 0.7s var(--ease-smooth) forwards; }
 
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* MOBILE UNCONTAINED / FLOATING LAYOUT */
+    @media (max-width: 600px) {
+      body { padding: 1rem; align-items: flex-start; }
+      .card {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 1rem 0;
+      }
     }
 
     .cover-art {
@@ -85,6 +98,7 @@
     .main-headline.active-streak { color: var(--color-white); }
     .main-headline.inactive-streak { color: var(--color-red); }
 
+    /* PAST 7 DAYS STRIP */
     .strip-container {
       margin: 1.5rem 0; padding: 1rem 0.5rem;
       background: rgba(255, 255, 255, 0.04);
@@ -93,14 +107,6 @@
     .strip-title { font-size: 0.8rem; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.8rem; }
     .strip-days { display: flex; justify-content: space-between; align-items: center; }
     .day-node { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .day-circle {
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 0.85rem;
-    }
-    .day-circle.played { background: var(--color-white); color: #000; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
-    .day-circle.missed { border: 2px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.3); }
-    .day-label { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
 
     .records-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.2rem 0 1.8rem; }
     .record-card {
@@ -133,52 +139,78 @@
     }
     .track-info a { color: var(--color-white); font-weight: 600; text-decoration: underline; }
 
-    /* MODAL STYLES */
+    /* MODAL OVERLAY & MODAL WINDOW */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(15px);
       z-index: 200; opacity: 0; visibility: hidden; transition: all 0.3s ease;
-      display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; padding: 2rem 1rem;
+      display: flex; justify-content: center; align-items: center; padding: 1rem;
     }
     .modal-overlay.open { opacity: 1; visibility: visible; }
     
     .modal-content {
       background: #141414; border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 24px; max-width: 480px; width: 100%; padding: 1.8rem;
-      color: var(--color-white); position: relative;
+      border-radius: 24px; max-width: 480px; width: 100%; height: 85vh;
+      display: flex; flex-direction: column; color: var(--color-white);
+      position: relative; overflow: hidden;
     }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+
+    /* STICKY TOP HEADER IN MODAL */
+    .modal-sticky-header {
+      position: sticky; top: 0; background: #141414; z-index: 50;
+      padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .modal-title { font-size: 1.3rem; font-weight: 800; }
     .close-btn { background: none; border: none; color: #fff; font-size: 1.6rem; cursor: pointer; }
 
     .toggle-container {
       display: flex; align-items: center; background: rgba(255,255,255,0.08);
-      border-radius: 30px; padding: 4px; font-size: 0.85rem; margin-bottom: 1rem;
+      border-radius: 30px; padding: 4px; font-size: 0.85rem; margin-bottom: 0.8rem;
     }
     .toggle-option {
       flex: 1; text-align: center; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s ease;
     }
     .toggle-option.active { background: var(--color-white); color: #000; font-weight: 700; }
 
+    /* STICKY WEEKDAY HEADERS */
+    .calendar-weekdays-sticky {
+      display: grid; grid-template-columns: repeat(7, 1fr); text-align: center;
+      padding: 0.4rem 0; font-size: 0.75rem; color: rgba(255, 255, 255, 0.4);
+      font-weight: 600; background: #141414;
+    }
+
+    /* CONTINUOUS SCROLLABLE CALENDAR BODY */
+    .modal-scroll-body {
+      flex: 1; overflow-y: auto; padding: 0 1.5rem 5rem 1.5rem;
+    }
+
+    .sticky-month-header {
+      position: sticky; top: 0; background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(8px); padding: 0.8rem 0; font-size: 0.95rem;
+      font-weight: 700; color: var(--text-sub); text-align: left; z-index: 10;
+    }
+
+    .calendar-continuous-grid {
+      display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 0; text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    /* STICKY BOTTOM HEATMAP LEGEND */
     .heatmap-legend {
-      display: none; align-items: center; justify-content: center; gap: 8px;
-      font-size: 0.75rem; color: var(--text-sub); margin-bottom: 1.2rem;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.8rem; display: none; align-items: center; justify-content: center; gap: 8px;
+      font-size: 0.75rem; color: var(--text-sub); z-index: 60;
     }
     .heatmap-legend.active { display: flex; }
     .legend-box { width: 14px; height: 14px; border-radius: 3px; }
 
-    .month-section { margin-bottom: 2rem; }
-    .month-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; text-align: left; color: var(--text-sub); }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 0; text-align: center; }
-    .weekday-header { font-size: 0.75rem; color: rgba(255, 255, 255, 0.4); font-weight: 600; margin-bottom: 6px; }
-    
-    .cal-cell {
-      display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative;
-    }
-
-    /* STEP 4: RAY & RIBBON CSS FIXES */
+    /* CIRCLE & RIBBON STYLING FIXES */
     .circle-wrapper {
-      position: relative; width: 32px; height: 32px;
+      position: relative; width: 36px; height: 36px;
       display: flex; align-items: center; justify-content: center;
     }
 
@@ -189,27 +221,30 @@
       background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.12);
       z-index: 3;
     }
-    .cal-circle.listened { background: var(--color-white); color: #000; }
-    .cal-num { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
+    /* WHITE CIRCLE FOR RECORDED STREAK DAYS */
+    .cal-circle.listened { background: var(--color-white) !important; color: #000 !important; border: none; }
+    .cal-num { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; margin-top: 2px; }
 
+    /* STREAK RIBBON BACKGROUND (OVERSIZED BY FEW PIXELS) */
     .ribbon-pill {
-      position: absolute; top: 0; bottom: 0; z-index: 2;
+      position: absolute; top: -1px; bottom: -1px; z-index: 2;
       background: linear-gradient(90deg, #ff007f, #e60023);
     }
-    .ribbon-pill.single { left: 0; right: 0; border-radius: 20px; }
-    .ribbon-pill.start { left: 0; right: -12px; border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
+    .ribbon-pill.single { left: -1px; right: -1px; border-radius: 20px; }
+    .ribbon-pill.start { left: -1px; right: -12px; border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
     .ribbon-pill.middle { left: -12px; right: -12px; }
-    .ribbon-pill.end { left: -12px; right: 0; border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
+    .ribbon-pill.end { left: -12px; right: -1px; border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
 
+    /* PEAK VOLUME NON-ROTATING PULSING SUNBURST RAYS */
     .sunray-svg {
-      position: absolute; top: -12px; left: -12px; width: 56px; height: 56px;
+      position: absolute; top: -10px; left: -10px; width: 56px; height: 56px;
       pointer-events: none; z-index: 1;
-      animation: spinRays 12s linear infinite;
+      animation: pulseRays 2.2s ease-in-out infinite;
     }
 
-    @keyframes spinRays {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    @keyframes pulseRays {
+      0%, 100% { transform: scale(0.92); opacity: 0.7; }
+      50% { transform: scale(1.15); opacity: 1; }
     }
   </style>
 </head>
@@ -254,17 +289,31 @@
   </div>
 
   <div id="history-modal" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title">Listening History</h2>
-        <button id="close-modal-btn" class="close-btn">&times;</button>
+    <div id="modal-card" class="modal-content">
+      
+      <!-- STICKY HEADER AREA -->
+      <div class="modal-sticky-header">
+        <div class="modal-header">
+          <h2 class="modal-title">Listening History</h2>
+          <button id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+
+        <div class="toggle-container">
+          <div id="toggle-binary" class="toggle-option active">Streak</div>
+          <div id="toggle-heatmap" class="toggle-option">Tracks per day</div>
+        </div>
+
+        <div class="calendar-weekdays-sticky">
+          <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+        </div>
       </div>
 
-      <div class="toggle-container">
-        <div id="toggle-binary" class="toggle-option active">Streak</div>
-        <div id="toggle-heatmap" class="toggle-option">Tracks per day</div>
+      <!-- CONTINUOUS SCROLLABLE CALENDAR CONTAINER -->
+      <div id="modal-scroll-body" class="modal-scroll-body">
+        <div id="calendar-container">Loading history...</div>
       </div>
 
+      <!-- STICKY BOTTOM LEGEND FOR HEATMAP MODE -->
       <div id="heatmap-legend" class="heatmap-legend">
         <span>0</span>
         <div class="legend-box" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"></div>
@@ -275,7 +324,6 @@
         <span id="legend-max-label">0 tracks</span>
       </div>
 
-      <div id="calendar-container">Loading full history...</div>
     </div>
   </div>
 
@@ -291,11 +339,28 @@
       return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
 
-    // STEP 3: EXPLICIT LOCAL YYYY-MM-DD DATE GENERATION
     function formatDateKey(year, monthIndex, day) {
       const m = String(monthIndex + 1).padStart(2, '0');
       const d = String(day).padStart(2, '0');
       return `${year}-${m}-${d}`;
+    }
+
+    // CREATE SUNRAY SVG ELEMENT
+    function createSunraySVG() {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("class", "sunray-svg");
+      svg.setAttribute("viewBox", "0 0 56 56");
+      svg.innerHTML = `
+        <line x1="28" y1="2" x2="28" y2="8" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="28" y1="48" x2="28" y2="54" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="2" y1="28" x2="8" y2="28" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="48" y1="28" x2="54" y2="28" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="10" y1="10" x2="14" y2="14" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="42" y1="42" x2="46" y2="46" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="10" y1="46" x2="14" y2="42" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+        <line x1="42" y1="14" x2="46" y2="10" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+      `;
+      return svg;
     }
 
     async function loadData() {
@@ -374,19 +439,35 @@
 
         const node = document.createElement('div');
         node.className = 'day-node';
-        node.innerHTML = `
-          <div class="day-circle ${hasListened ? 'played' : 'missed'}">
-            ${hasListened ? '✓' : ''}
-          </div>
-          <div class="day-label">${i === 0 ? 'Today' : dayName}</div>
-        `;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'circle-wrapper';
+
+        const circle = document.createElement('div');
+        circle.className = `cal-circle ${hasListened ? 'listened' : ''}`;
+        circle.innerText = hasListened ? '✓' : '';
+
+        // SHOW PEAK VOLUME RAYS ON MAIN SCREEN IF PEAK RECORD IS IN THE PAST 7 DAYS
+        if (coreData.peak_volume && dateStr === coreData.peak_volume.date) {
+          wrapper.appendChild(createSunraySVG());
+        }
+
+        wrapper.appendChild(circle);
+
+        const label = document.createElement('div');
+        label.className = 'cal-num';
+        label.innerText = i === 0 ? 'Today' : dayName;
+
+        node.appendChild(wrapper);
+        node.appendChild(label);
         container.appendChild(node);
       }
     }
 
+    /* RENDER CONTINUOUS CALENDAR CHRONOLOGICALLY (OLDER MONTHS AT TOP) */
     function renderCalendar() {
       const container = document.getElementById('calendar-container');
-      const dates = Object.keys(historyData).sort().reverse();
+      const dates = Object.keys(historyData).sort(); // Ascending date order
       if (dates.length === 0) {
         container.innerText = "No history recorded.";
         return;
@@ -400,23 +481,21 @@
       }
       document.getElementById('legend-max-label').innerText = `${maxCount} tracks`;
 
-      const latestDate = new Date(dates[0]);
-      const earliestDate = new Date(dates[dates.length - 1]);
-      let currentMonth = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+      const earliestDate = new Date(dates[0]);
+      const latestDate = new Date(dates[dates.length - 1]);
 
-      while (currentMonth >= new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1)) {
+      let currentMonth = new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1);
+      const endMonth = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+
+      while (currentMonth <= endMonth) {
         const monthSection = document.createElement('div');
-        monthSection.className = 'month-section';
 
+        // STICKY MONTH NAME
         const monthName = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        monthSection.innerHTML = `<div class="month-name">${monthName}</div>`;
+        monthSection.innerHTML = `<div class="sticky-month-header">${monthName}</div>`;
 
         const grid = document.createElement('div');
-        grid.className = 'calendar-grid';
-
-        ['M', 'T', 'W', 'T', 'F', 'S', 'S'].forEach(w => {
-          grid.innerHTML += `<div class="weekday-header">${w}</div>`;
-        });
+        grid.className = 'calendar-continuous-grid';
 
         let firstDayIndex = currentMonth.getDay() - 1;
         if (firstDayIndex === -1) firstDayIndex = 6;
@@ -430,7 +509,9 @@
           const count = historyData[dateStr] || 0;
 
           const cell = document.createElement('div');
-          cell.className = 'cal-cell';
+          cell.style.display = 'flex';
+          cell.style.flexDirection = 'column';
+          cell.style.alignItems = 'center';
 
           const circleWrapper = document.createElement('div');
           circleWrapper.className = 'circle-wrapper';
@@ -446,25 +527,7 @@
             circle.classList.add('listened');
             circle.innerText = '✓';
 
-            // Peak Volume Sunburst Rays
-            if (coreData.peak_volume && dateStr === coreData.peak_volume.date) {
-              const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-              svg.setAttribute("class", "sunray-svg");
-              svg.setAttribute("viewBox", "0 0 56 56");
-              svg.innerHTML = `
-                <line x1="28" y1="2" x2="28" y2="8" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-                <line x1="28" y1="48" x2="28" y2="54" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-                <line x1="2" y1="28" x2="8" y2="28" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-                <line x1="48" y1="28" x2="54" y2="28" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="10" x2="14" y2="14" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-                <line x1="42" y1="42" x2="46" y2="46" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-                <line x1="10" y1="46" x2="14" y2="42" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-                <line x1="42" y1="14" x2="46" y2="10" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
-              `;
-              circleWrapper.appendChild(svg);
-            }
-
-            // Streak Capsule Gradient
+            // STREAK CAPSULE GRADIENT (OVERSIZED BACKDROP)
             if (currentMode === 'binary' && coreData.longest_streak &&
                 dateStr >= coreData.longest_streak.start_date && dateStr <= coreData.longest_streak.end_date) {
               
@@ -485,22 +548,23 @@
               else ribbon.className = 'ribbon-pill single';
 
               circleWrapper.appendChild(ribbon);
-              circle.style.color = '#fff';
-              circle.style.background = 'transparent';
-              circle.style.border = 'none';
             }
 
-            // Heatmap Display
+            // HEATMAP MODE: SHOW TRACK COUNTS & PULSING RAYS
             if (currentMode === 'heatmap') {
               circle.innerText = count;
-              circle.style.border = 'none';
-              circle.style.color = '#fff';
+              circle.classList.remove('listened');
 
               const ratio = count / maxCount;
               if (ratio >= 0.75) circle.style.background = '#39d353';
               else if (ratio >= 0.50) circle.style.background = '#26a641';
               else if (ratio >= 0.25) circle.style.background = '#006d32';
               else circle.style.background = '#0e4429';
+
+              // SUNBURST RAYS ONLY DISPLAY IN HEATMAP MODE
+              if (coreData.peak_volume && dateStr === coreData.peak_volume.date) {
+                circleWrapper.appendChild(createSunraySVG());
+              }
             }
           }
 
@@ -512,21 +576,36 @@
 
         monthSection.appendChild(grid);
         container.appendChild(monthSection);
-        currentMonth.setMonth(currentMonth.getMonth() - 1);
+        currentMonth.setMonth(currentMonth.getMonth() + 1);
       }
     }
 
+    // OPEN & CLOSE MODAL LISTENERS
     document.getElementById('open-history-btn').addEventListener('click', () => {
       document.body.classList.add('modal-open');
       document.getElementById('history-modal').classList.add('open');
       renderCalendar();
+      
+      // Auto-scroll modal body to bottom (most recent dates)
+      const scrollBody = document.getElementById('modal-scroll-body');
+      scrollBody.scrollTop = scrollBody.scrollHeight;
     });
 
-    document.getElementById('close-modal-btn').addEventListener('click', () => {
+    function closeModal() {
       document.body.classList.remove('modal-open');
       document.getElementById('history-modal').classList.remove('open');
+    }
+
+    document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+
+    // CLOSE WHEN CLICKING OUTSIDE THE MODAL CONTENT CARD
+    document.getElementById('history-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('history-modal')) {
+        closeModal();
+      }
     });
 
+    // MODE TOGGLES
     document.getElementById('toggle-binary').addEventListener('click', () => {
       currentMode = 'binary';
       document.getElementById('toggle-binary').classList.add('active');
