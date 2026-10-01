@@ -133,6 +133,7 @@
     }
     .track-info a { color: var(--color-white); font-weight: 600; text-decoration: underline; }
 
+    /* MODAL STYLES */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(15px);
@@ -175,6 +176,7 @@
       display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative;
     }
 
+    /* STEP 4: RAY & RIBBON CSS FIXES */
     .circle-wrapper {
       position: relative; width: 32px; height: 32px;
       display: flex; align-items: center; justify-content: center;
@@ -190,38 +192,18 @@
     .cal-circle.listened { background: var(--color-white); color: #000; }
     .cal-num { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
 
-    /* EXACT PILL RIBBON GRADIENT */
     .ribbon-pill {
-      position: absolute;
-      top: 0; bottom: 0;
-      z-index: 2;
+      position: absolute; top: 0; bottom: 0; z-index: 2;
       background: linear-gradient(90deg, #ff007f, #e60023);
     }
-    .ribbon-pill.single {
-      left: 0; right: 0;
-      border-radius: 20px;
-    }
-    .ribbon-pill.start {
-      left: 0; right: -12px;
-      border-top-left-radius: 20px;
-      border-bottom-left-radius: 20px;
-    }
-    .ribbon-pill.middle {
-      left: -12px; right: -12px;
-    }
-    .ribbon-pill.end {
-      left: -12px; right: 0;
-      border-top-right-radius: 20px;
-      border-bottom-right-radius: 20px;
-    }
+    .ribbon-pill.single { left: 0; right: 0; border-radius: 20px; }
+    .ribbon-pill.start { left: 0; right: -12px; border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
+    .ribbon-pill.middle { left: -12px; right: -12px; }
+    .ribbon-pill.end { left: -12px; right: 0; border-top-right-radius: 20px; border-bottom-right-radius: 20px; }
 
-    /* SUNBURST RAYS ANIMATION */
     .sunray-svg {
-      position: absolute;
-      top: -12px; left: -12px;
-      width: 56px; height: 56px;
-      pointer-events: none;
-      z-index: 1;
+      position: absolute; top: -12px; left: -12px; width: 56px; height: 56px;
+      pointer-events: none; z-index: 1;
       animation: spinRays 12s linear infinite;
     }
 
@@ -309,6 +291,13 @@
       return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
 
+    // STEP 3: EXPLICIT LOCAL YYYY-MM-DD DATE GENERATION
+    function formatDateKey(year, monthIndex, day) {
+      const m = String(monthIndex + 1).padStart(2, '0');
+      const d = String(day).padStart(2, '0');
+      return `${year}-${m}-${d}`;
+    }
+
     async function loadData() {
       try {
         const [coreRes, historyRes] = await Promise.all([
@@ -318,22 +307,6 @@
 
         coreData = await coreRes.json();
         historyData = await historyRes.json();
-
-        // Harmonize historyData with core records to fix discrepancies
-        if (coreData.peak_volume && coreData.peak_volume.date) {
-          if (!historyData[coreData.peak_volume.date]) {
-            historyData[coreData.peak_volume.date] = coreData.peak_volume.count;
-          }
-        }
-        if (coreData.longest_streak) {
-          let cur = new Date(coreData.longest_streak.start_date);
-          const end = new Date(coreData.longest_streak.end_date);
-          while (cur <= end) {
-            const dateStr = cur.toISOString().split('T')[0];
-            if (!historyData[dateStr]) historyData[dateStr] = 1;
-            cur.setDate(cur.getDate() + 1);
-          }
-        }
 
         renderUI();
       } catch (err) {
@@ -394,10 +367,10 @@
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(today.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
+        const dateStr = formatDateKey(d.getFullYear(), d.getMonth(), d.getDate());
         const dayName = days[d.getDay()];
 
-        const hasListened = historyData && (typeof historyData[dateStr] === 'number' ? historyData[dateStr] > 0 : historyData[dateStr]?.count > 0);
+        const hasListened = historyData && (historyData[dateStr] || 0) > 0;
 
         const node = document.createElement('div');
         node.className = 'day-node';
@@ -423,8 +396,7 @@
 
       let maxCount = coreData.peak_volume ? coreData.peak_volume.count : 1;
       for (const val of Object.values(historyData)) {
-        const count = typeof val === 'number' ? val : (val?.count || 0);
-        if (count > maxCount) maxCount = count;
+        if (val > maxCount) maxCount = val;
       }
       document.getElementById('legend-max-label').innerText = `${maxCount} tracks`;
 
@@ -454,10 +426,8 @@
         const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
 
         for (let day = 1; day <= daysInMonth; day++) {
-          const dayDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-          const dateStr = dayDate.toISOString().split('T')[0];
-          const rawEntry = historyData[dateStr];
-          const count = typeof rawEntry === 'number' ? rawEntry : (rawEntry?.count || 0);
+          const dateStr = formatDateKey(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+          const count = historyData[dateStr] || 0;
 
           const cell = document.createElement('div');
           cell.className = 'cal-cell';
@@ -498,11 +468,12 @@
             if (currentMode === 'binary' && coreData.longest_streak &&
                 dateStr >= coreData.longest_streak.start_date && dateStr <= coreData.longest_streak.end_date) {
               
+              const dayDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
               const prevD = new Date(dayDate); prevD.setDate(prevD.getDate() - 1);
               const nextD = new Date(dayDate); nextD.setDate(nextD.getDate() + 1);
 
-              const prevDateStr = prevD.toISOString().split('T')[0];
-              const nextDateStr = nextD.toISOString().split('T')[0];
+              const prevDateStr = formatDateKey(prevD.getFullYear(), prevD.getMonth(), prevD.getDate());
+              const nextDateStr = formatDateKey(nextD.getFullYear(), nextD.getMonth(), nextD.getDate());
 
               const isPrevInStreak = prevDateStr >= coreData.longest_streak.start_date && (historyData[prevDateStr] || 0) > 0 && dayDate.getDay() !== 1;
               const isNextInStreak = nextDateStr <= coreData.longest_streak.end_date && (historyData[nextDateStr] || 0) > 0 && dayDate.getDay() !== 0;
@@ -519,7 +490,7 @@
               circle.style.border = 'none';
             }
 
-            // Dynamic Heatmap Scale
+            // Heatmap Display
             if (currentMode === 'heatmap') {
               circle.innerText = count;
               circle.style.border = 'none';
