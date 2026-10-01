@@ -27,11 +27,8 @@
       overflow-x: hidden; padding: 1.5rem;
     }
 
-    body.modal-open {
-      overflow: hidden !important;
-    }
+    body.modal-open { overflow: hidden !important; }
 
-    /* Preloaded Slow Blurred Background Animation */
     .bg-blur {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-size: cover; background-position: center;
@@ -40,7 +37,6 @@
     }
     .bg-blur.loaded { opacity: 1; }
 
-    /* Loader Overlay */
     .loader-container {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       display: flex; justify-content: center; align-items: center;
@@ -61,7 +57,6 @@
       40% { transform: scale(1); opacity: 1; }
     }
 
-    /* Main Container Card */
     .card {
       background: var(--card-bg);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -90,7 +85,6 @@
     .main-headline.active-streak { color: var(--color-white); }
     .main-headline.inactive-streak { color: var(--color-red); }
 
-    /* 7-Day Quick Strip */
     .strip-container {
       margin: 1.5rem 0; padding: 1rem 0.5rem;
       background: rgba(255, 255, 255, 0.04);
@@ -108,7 +102,6 @@
     .day-circle.missed { border: 2px solid rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.3); }
     .day-label { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
 
-    /* Record Badges */
     .records-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.2rem 0 1.8rem; }
     .record-card {
       background: rgba(255, 255, 255, 0.05); padding: 0.9rem;
@@ -118,7 +111,6 @@
     .record-value { font-size: 1.1rem; font-weight: 800; }
     .record-sub { font-size: 0.72rem; color: rgba(255, 255, 255, 0.65); margin-top: 2px; }
 
-    /* Action Buttons */
     .btn-group { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
     .spotify-btn {
       display: block; background: var(--color-white); color: #000;
@@ -135,14 +127,12 @@
     }
     .history-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--color-white); }
 
-    /* Footer Track Info */
     .track-info {
       font-size: 0.9rem; line-height: 1.5; color: var(--text-sub);
       border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 1.2rem;
     }
     .track-info a { color: var(--color-white); font-weight: 600; text-decoration: underline; }
 
-    /* Calendar Modal */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(15px);
@@ -160,7 +150,6 @@
     .modal-title { font-size: 1.3rem; font-weight: 800; }
     .close-btn { background: none; border: none; color: #fff; font-size: 1.6rem; cursor: pointer; }
 
-    /* Navigation Tabs */
     .toggle-container {
       display: flex; align-items: center; background: rgba(255,255,255,0.08);
       border-radius: 30px; padding: 4px; font-size: 0.85rem; margin-bottom: 1rem;
@@ -170,7 +159,6 @@
     }
     .toggle-option.active { background: var(--color-white); color: #000; font-weight: 700; }
 
-    /* Heatmap Scale Legend */
     .heatmap-legend {
       display: none; align-items: center; justify-content: center; gap: 8px;
       font-size: 0.75rem; color: var(--text-sub); margin-bottom: 1.2rem;
@@ -178,7 +166,6 @@
     .heatmap-legend.active { display: flex; }
     .legend-box { width: 14px; height: 14px; border-radius: 3px; }
 
-    /* Calendar Grid Setup */
     .month-section { margin-bottom: 2rem; }
     .month-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; text-align: left; color: var(--text-sub); }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 0; text-align: center; }
@@ -186,14 +173,11 @@
     
     .cal-cell {
       display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative;
-      overflow: visible;
     }
 
-    /* Circle Container for Exact Ribbon Wrapping & Sunrays */
     .circle-wrapper {
       position: relative; width: 32px; height: 32px;
       display: flex; align-items: center; justify-content: center;
-      overflow: visible;
     }
 
     .cal-circle {
@@ -201,32 +185,44 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 0.85rem; font-weight: 700; position: relative;
       background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.12);
-      z-index: 2;
+      z-index: 3;
     }
     .cal-circle.listened { background: var(--color-white); color: #000; }
     .cal-num { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
 
-    /* Record Streak Pill Ribbon */
-    .ribbon-wrap {
-      position: absolute; top: 0; bottom: 0; z-index: 1;
-      background: linear-gradient(90deg, var(--color-magenta), var(--color-red));
+    /* EXACT PILL RIBBON GRADIENT */
+    .ribbon-pill {
+      position: absolute;
+      top: 0; bottom: 0;
+      z-index: 2;
+      background: linear-gradient(90deg, #ff007f, #e60023);
     }
-    .ribbon-wrap.single { left: 0; right: 0; border-radius: 16px; }
-    .ribbon-wrap.start { left: 0; right: -8px; border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
-    .ribbon-wrap.middle { left: -8px; right: -8px; }
-    .ribbon-wrap.end { left: -8px; right: 0; border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+    .ribbon-pill.single {
+      left: 0; right: 0;
+      border-radius: 20px;
+    }
+    .ribbon-pill.start {
+      left: 0; right: -12px;
+      border-top-left-radius: 20px;
+      border-bottom-left-radius: 20px;
+    }
+    .ribbon-pill.middle {
+      left: -12px; right: -12px;
+    }
+    .ribbon-pill.end {
+      left: -12px; right: 0;
+      border-top-right-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
 
-    /* Rotated Sunray Animation for Peak Volume Day */
+    /* SUNBURST RAYS ANIMATION */
     .sunray-svg {
       position: absolute;
-      top: -10px;
-      left: -10px;
-      width: 52px;
-      height: 52px;
+      top: -12px; left: -12px;
+      width: 56px; height: 56px;
       pointer-events: none;
-      z-index: 3;
-      animation: spinRays 10s linear infinite;
-      overflow: visible;
+      z-index: 1;
+      animation: spinRays 12s linear infinite;
     }
 
     @keyframes spinRays {
@@ -239,24 +235,19 @@
 
   <div id="bg-blur" class="bg-blur"></div>
 
-  <!-- Loader Overlay -->
   <div id="loader" class="loader-container">
     <div class="dots-loader"><div></div><div></div><div></div></div>
   </div>
 
-  <!-- Main Card -->
   <div id="main-card" class="card">
     <img id="cover-art" class="cover-art" src="" alt="Album Art" style="display: none;" />
-
     <h1 id="main-headline" class="main-headline active-streak">...</h1>
 
-    <!-- Past 7 Days Strip -->
     <div class="strip-container">
       <div class="strip-title">Past 7 Days</div>
       <div id="strip-days" class="strip-days"></div>
     </div>
 
-    <!-- Record Badges -->
     <div class="records-grid">
       <div class="record-card">
         <div class="record-label">🔥 Longest Streak</div>
@@ -280,7 +271,6 @@
     <p id="track-info" class="track-info">Fetching last recorded song...</p>
   </div>
 
-  <!-- Full History Modal -->
   <div id="history-modal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
@@ -288,13 +278,11 @@
         <button id="close-modal-btn" class="close-btn">&times;</button>
       </div>
 
-      <!-- Navigation Tabs -->
       <div class="toggle-container">
         <div id="toggle-binary" class="toggle-option active">Streak</div>
         <div id="toggle-heatmap" class="toggle-option">Tracks per day</div>
       </div>
 
-      <!-- Dynamic Heatmap Scale Legend -->
       <div id="heatmap-legend" class="heatmap-legend">
         <span>0</span>
         <div class="legend-box" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"></div>
@@ -302,7 +290,7 @@
         <div class="legend-box" style="background: #006d32;"></div>
         <div class="legend-box" style="background: #26a641;"></div>
         <div class="legend-box" style="background: #39d353;"></div>
-        <span id="legend-max-label">15+ tracks</span>
+        <span id="legend-max-label">0 tracks</span>
       </div>
 
       <div id="calendar-container">Loading full history...</div>
@@ -310,8 +298,8 @@
   </div>
 
   <script>
-    let historyData = null;
-    let coreData = null;
+    let historyData = {};
+    let coreData = {};
     let currentMode = 'binary';
 
     function formatEUDate(dateStr) {
@@ -321,74 +309,85 @@
       return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
 
-    async function loadCoreTracker() {
+    async function loadData() {
       try {
-        const res = await fetch('./last_played.json?cache=' + Date.now());
-        coreData = await res.json();
+        const [coreRes, historyRes] = await Promise.all([
+          fetch('./last_played.json?cache=' + Date.now()),
+          fetch('./history.json?cache=' + Date.now())
+        ]);
 
-        if (coreData.latest_track && coreData.latest_track.album_art) {
-          const img = document.getElementById('cover-art');
-          img.src = coreData.latest_track.album_art;
-          img.style.display = 'block';
+        coreData = await coreRes.json();
+        historyData = await historyRes.json();
 
-          const bgImg = new Image();
-          bgImg.src = coreData.latest_track.album_art;
-          bgImg.onload = () => {
-            const bgBlur = document.getElementById('bg-blur');
-            bgBlur.style.backgroundImage = `url('${coreData.latest_track.album_art}')`;
-            bgBlur.classList.add('loaded');
-          };
+        // Harmonize historyData with core records to fix discrepancies
+        if (coreData.peak_volume && coreData.peak_volume.date) {
+          if (!historyData[coreData.peak_volume.date]) {
+            historyData[coreData.peak_volume.date] = coreData.peak_volume.count;
+          }
+        }
+        if (coreData.longest_streak) {
+          let cur = new Date(coreData.longest_streak.start_date);
+          const end = new Date(coreData.longest_streak.end_date);
+          while (cur <= end) {
+            const dateStr = cur.toISOString().split('T')[0];
+            if (!historyData[dateStr]) historyData[dateStr] = 1;
+            cur.setDate(cur.getDate() + 1);
+          }
         }
 
-        const headlineEl = document.getElementById('main-headline');
-        const streak = coreData.current_streak || 0;
-        if (streak > 0) {
-          headlineEl.className = "main-headline active-streak";
-          headlineEl.innerText = `Pietro is on a ${streak}-day ROSALÍA streak 🔥`;
-        } else {
-          headlineEl.className = "main-headline inactive-streak";
-          headlineEl.innerText = `Pietro's ROSALÍA streak was broken 😱`;
-        }
-
-        if (coreData.longest_streak && coreData.longest_streak.count > 0) {
-          document.getElementById('record-streak-val').innerText = `${coreData.longest_streak.count} Days`;
-          document.getElementById('record-streak-sub').innerText = 
-            `from ${formatEUDate(coreData.longest_streak.start_date)} to ${formatEUDate(coreData.longest_streak.end_date)}`;
-        }
-
-        if (coreData.peak_volume && coreData.peak_volume.count > 0) {
-          document.getElementById('record-volume-val').innerText = `${coreData.peak_volume.count} Tracks`;
-          document.getElementById('record-volume-sub').innerText = `on ${formatEUDate(coreData.peak_volume.date)}`;
-        }
-
-        if (coreData.latest_track) {
-          const t = coreData.latest_track;
-          const playedDate = new Date(t.timestamp);
-          const dateFormatted = playedDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
-          const timeFormatted = playedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          document.getElementById('track-info').innerHTML = 
-            `Last track: '<a href="${t.spotify_url}" target="_blank">${t.track_name}</a>' from <a href="${t.album_url}" target="_blank">${t.album_name}</a> on ${dateFormatted} at ${timeFormatted}.`;
-        }
-
+        renderUI();
       } catch (err) {
-        console.error("Error loading core tracker", err);
+        console.error("Data load error", err);
       }
     }
 
-    async function loadFullHistory() {
-      try {
-        const res = await fetch('./history.json?cache=' + Date.now());
-        historyData = await res.json();
-        render7DayStrip();
-      } catch (err) {
-        console.error("History data loading error", err);
+    function renderUI() {
+      if (coreData.latest_track && coreData.latest_track.album_art) {
+        const img = document.getElementById('cover-art');
+        img.src = coreData.latest_track.album_art;
+        img.style.display = 'block';
+
+        const bgBlur = document.getElementById('bg-blur');
+        bgBlur.style.backgroundImage = `url('${coreData.latest_track.album_art}')`;
+        bgBlur.classList.add('loaded');
       }
+
+      const headlineEl = document.getElementById('main-headline');
+      const streak = coreData.current_streak || 0;
+      if (streak > 0) {
+        headlineEl.className = "main-headline active-streak";
+        headlineEl.innerText = `Pietro is on a ${streak}-day ROSALÍA streak 🔥`;
+      } else {
+        headlineEl.className = "main-headline inactive-streak";
+        headlineEl.innerText = `Pietro's ROSALÍA streak was broken 😱`;
+      }
+
+      if (coreData.longest_streak && coreData.longest_streak.count > 0) {
+        document.getElementById('record-streak-val').innerText = `${coreData.longest_streak.count} Days`;
+        document.getElementById('record-streak-sub').innerText = 
+          `from ${formatEUDate(coreData.longest_streak.start_date)} to ${formatEUDate(coreData.longest_streak.end_date)}`;
+      }
+
+      if (coreData.peak_volume && coreData.peak_volume.count > 0) {
+        document.getElementById('record-volume-val').innerText = `${coreData.peak_volume.count} Tracks`;
+        document.getElementById('record-volume-sub').innerText = `on ${formatEUDate(coreData.peak_volume.date)}`;
+      }
+
+      if (coreData.latest_track) {
+        const t = coreData.latest_track;
+        const playedDate = new Date(t.timestamp);
+        const dateFormatted = playedDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const timeFormatted = playedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('track-info').innerHTML = 
+          `Last track: '<a href="${t.spotify_url}" target="_blank">${t.track_name}</a>' from <a href="${t.album_url}" target="_blank">${t.album_name}</a> on ${dateFormatted} at ${timeFormatted}.`;
+      }
+
+      render7DayStrip();
     }
 
     function render7DayStrip() {
       const container = document.getElementById('strip-days');
       container.innerHTML = '';
-      
       const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
       const today = new Date();
 
@@ -414,23 +413,23 @@
 
     function renderCalendar() {
       const container = document.getElementById('calendar-container');
-      if (!historyData || Object.keys(historyData).length === 0) {
-        container.innerText = "No historical listening dates recorded yet.";
+      const dates = Object.keys(historyData).sort().reverse();
+      if (dates.length === 0) {
+        container.innerText = "No history recorded.";
         return;
       }
 
       container.innerHTML = '';
-      const dates = Object.keys(historyData).sort().reverse();
-      const latestDate = new Date(dates[0]);
-      const earliestDate = new Date(dates[dates.length - 1]);
 
-      let maxCount = 1;
-      for (const count of Object.values(historyData)) {
-        const val = typeof count === 'number' ? count : (count?.count || 0);
-        if (val > maxCount) maxCount = val;
+      let maxCount = coreData.peak_volume ? coreData.peak_volume.count : 1;
+      for (const val of Object.values(historyData)) {
+        const count = typeof val === 'number' ? val : (val?.count || 0);
+        if (count > maxCount) maxCount = count;
       }
       document.getElementById('legend-max-label').innerText = `${maxCount} tracks`;
 
+      const latestDate = new Date(dates[0]);
+      const earliestDate = new Date(dates[dates.length - 1]);
       let currentMonth = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
 
       while (currentMonth >= new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1)) {
@@ -450,9 +449,7 @@
         let firstDayIndex = currentMonth.getDay() - 1;
         if (firstDayIndex === -1) firstDayIndex = 6;
 
-        for (let i = 0; i < firstDayIndex; i++) {
-          grid.innerHTML += `<div></div>`;
-        }
+        for (let i = 0; i < firstDayIndex; i++) grid.innerHTML += `<div></div>`;
 
         const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
 
@@ -479,26 +476,26 @@
             circle.classList.add('listened');
             circle.innerText = '✓';
 
-            // Explicit Sunburst SVG for Peak Volume Day
-            if (coreData && coreData.peak_volume && dateStr === coreData.peak_volume.date) {
-              const svgContainer = document.createElement('div');
-              svgContainer.innerHTML = `
-                <svg class="sunray-svg" viewBox="0 0 52 52">
-                  <line x1="26" y1="2" x2="26" y2="8" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                  <line x1="26" y1="44" x2="26" y2="50" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                  <line x1="2" y1="26" x2="8" y2="26" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                  <line x1="44" y1="26" x2="50" y2="26" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                  <line x1="9" y1="9" x2="13" y2="13" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                  <line x1="39" y1="39" x2="43" y2="43" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                  <line x1="9" y1="43" x2="13" y2="39" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                  <line x1="39" y1="13" x2="43" y2="9" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
-                </svg>
+            // Peak Volume Sunburst Rays
+            if (coreData.peak_volume && dateStr === coreData.peak_volume.date) {
+              const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+              svg.setAttribute("class", "sunray-svg");
+              svg.setAttribute("viewBox", "0 0 56 56");
+              svg.innerHTML = `
+                <line x1="28" y1="2" x2="28" y2="8" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="28" y1="48" x2="28" y2="54" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="2" y1="28" x2="8" y2="28" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="48" y1="28" x2="54" y2="28" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="10" x2="14" y2="14" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="42" y1="42" x2="46" y2="46" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="10" y1="46" x2="14" y2="42" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
+                <line x1="42" y1="14" x2="46" y2="10" stroke="#ff007f" stroke-width="3" stroke-linecap="round"/>
               `;
-              circleWrapper.appendChild(svgContainer.firstElementChild);
+              circleWrapper.appendChild(svg);
             }
 
-            // Streak Ribbon Layout
-            if (currentMode === 'binary' && coreData && coreData.longest_streak &&
+            // Streak Capsule Gradient
+            if (currentMode === 'binary' && coreData.longest_streak &&
                 dateStr >= coreData.longest_streak.start_date && dateStr <= coreData.longest_streak.end_date) {
               
               const prevD = new Date(dayDate); prevD.setDate(prevD.getDate() - 1);
@@ -511,10 +508,10 @@
               const isNextInStreak = nextDateStr <= coreData.longest_streak.end_date && (historyData[nextDateStr] || 0) > 0 && dayDate.getDay() !== 0;
 
               const ribbon = document.createElement('div');
-              if (!isPrevInStreak && isNextInStreak) ribbon.className = 'ribbon-wrap start';
-              else if (isPrevInStreak && isNextInStreak) ribbon.className = 'ribbon-wrap middle';
-              else if (isPrevInStreak && !isNextInStreak) ribbon.className = 'ribbon-wrap end';
-              else ribbon.className = 'ribbon-wrap single';
+              if (!isPrevInStreak && isNextInStreak) ribbon.className = 'ribbon-pill start';
+              else if (isPrevInStreak && isNextInStreak) ribbon.className = 'ribbon-pill middle';
+              else if (isPrevInStreak && !isNextInStreak) ribbon.className = 'ribbon-pill end';
+              else ribbon.className = 'ribbon-pill single';
 
               circleWrapper.appendChild(ribbon);
               circle.style.color = '#fff';
@@ -522,7 +519,7 @@
               circle.style.border = 'none';
             }
 
-            // Heatmap mode
+            // Dynamic Heatmap Scale
             if (currentMode === 'heatmap') {
               circle.innerText = count;
               circle.style.border = 'none';
@@ -575,8 +572,7 @@
       renderCalendar();
     });
 
-    loadCoreTracker();
-    loadFullHistory();
+    loadData();
 
     window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
