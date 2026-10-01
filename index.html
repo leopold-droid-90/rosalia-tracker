@@ -27,6 +27,10 @@
       overflow-x: hidden; padding: 1.5rem;
     }
 
+    body.modal-open {
+      overflow: hidden !important;
+    }
+
     /* Preloaded Slow Blurred Background Animation */
     .bg-blur {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -177,10 +181,21 @@
     /* Calendar Grid Setup */
     .month-section { margin-bottom: 2rem; }
     .month-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; text-align: left; color: var(--text-sub); }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 4px; text-align: center; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 0; text-align: center; }
     .weekday-header { font-size: 0.75rem; color: rgba(255, 255, 255, 0.4); font-weight: 600; margin-bottom: 6px; }
     
-    .cal-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
+    .cal-cell {
+      display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative;
+      overflow: visible;
+    }
+
+    /* Circle Container for Exact Ribbon Wrapping & Sunrays */
+    .circle-wrapper {
+      position: relative; width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: visible;
+    }
+
     .cal-circle {
       width: 32px; height: 32px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
@@ -189,24 +204,35 @@
       z-index: 2;
     }
     .cal-circle.listened { background: var(--color-white); color: #000; }
-    .cal-num { font-size: 0.7rem; color: var(--text-sub); font-weight: 500; }
+    .cal-num { font-size: 0.75rem; color: var(--text-sub); font-weight: 600; }
 
-    /* Continuous Streak Ribbon Background */
+    /* Record Streak Pill Ribbon */
     .ribbon-wrap {
-      position: absolute; top: 0; height: 32px; z-index: 1;
+      position: absolute; top: 0; bottom: 0; z-index: 1;
       background: linear-gradient(90deg, var(--color-magenta), var(--color-red));
     }
-    .ribbon-wrap.start { border-top-left-radius: 16px; border-bottom-left-radius: 16px; left: 0; right: -4px; }
-    .ribbon-wrap.middle { left: -4px; right: -4px; }
-    .ribbon-wrap.end { border-top-right-radius: 16px; border-bottom-right-radius: 16px; left: -4px; right: 0; }
-    .ribbon-wrap.single { border-radius: 16px; left: 0; right: 0; }
+    .ribbon-wrap.single { left: 0; right: 0; border-radius: 16px; }
+    .ribbon-wrap.start { left: 0; right: -8px; border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+    .ribbon-wrap.middle { left: -8px; right: -8px; }
+    .ribbon-wrap.end { left: -8px; right: 0; border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
 
-    /* Hand-Drawn Sunrays Effect for Peak Volume */
+    /* Rotated Sunray Animation for Peak Volume Day */
     .sunray-svg {
-      position: absolute; top: -10px; left: -10px; width: 52px; height: 52px;
-      pointer-events: none; z-index: 3; animation: spinRays 12s linear infinite;
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 52px;
+      height: 52px;
+      pointer-events: none;
+      z-index: 3;
+      animation: spinRays 10s linear infinite;
+      overflow: visible;
     }
-    @keyframes spinRays { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    @keyframes spinRays {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -268,7 +294,7 @@
         <div id="toggle-heatmap" class="toggle-option">Tracks per day</div>
       </div>
 
-      <!-- Heatmap Scale Legend -->
+      <!-- Dynamic Heatmap Scale Legend -->
       <div id="heatmap-legend" class="heatmap-legend">
         <span>0</span>
         <div class="legend-box" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);"></div>
@@ -276,7 +302,7 @@
         <div class="legend-box" style="background: #006d32;"></div>
         <div class="legend-box" style="background: #26a641;"></div>
         <div class="legend-box" style="background: #39d353;"></div>
-        <span>15+ tracks</span>
+        <span id="legend-max-label">15+ tracks</span>
       </div>
 
       <div id="calendar-container">Loading full history...</div>
@@ -288,7 +314,6 @@
     let coreData = null;
     let currentMode = 'binary';
 
-    // Date Formatter: YYYY-MM-DD -> DD-MM-YYYY
     function formatEUDate(dateStr) {
       if (!dateStr) return '';
       const parts = dateStr.split('-');
@@ -301,7 +326,6 @@
         const res = await fetch('./last_played.json?cache=' + Date.now());
         coreData = await res.json();
 
-        // Slow Blur Background Loading
         if (coreData.latest_track && coreData.latest_track.album_art) {
           const img = document.getElementById('cover-art');
           img.src = coreData.latest_track.album_art;
@@ -316,7 +340,6 @@
           };
         }
 
-        // Headline Messaging
         const headlineEl = document.getElementById('main-headline');
         const streak = coreData.current_streak || 0;
         if (streak > 0) {
@@ -327,7 +350,6 @@
           headlineEl.innerText = `Pietro's ROSALÍA streak was broken 😱`;
         }
 
-        // European Date Formatting in Badges
         if (coreData.longest_streak && coreData.longest_streak.count > 0) {
           document.getElementById('record-streak-val').innerText = `${coreData.longest_streak.count} Days`;
           document.getElementById('record-streak-sub').innerText = 
@@ -339,7 +361,6 @@
           document.getElementById('record-volume-sub').innerText = `on ${formatEUDate(coreData.peak_volume.date)}`;
         }
 
-        // Track Info Footer
         if (coreData.latest_track) {
           const t = coreData.latest_track;
           const playedDate = new Date(t.timestamp);
@@ -403,6 +424,13 @@
       const latestDate = new Date(dates[0]);
       const earliestDate = new Date(dates[dates.length - 1]);
 
+      let maxCount = 1;
+      for (const count of Object.values(historyData)) {
+        const val = typeof count === 'number' ? count : (count?.count || 0);
+        if (val > maxCount) maxCount = val;
+      }
+      document.getElementById('legend-max-label').innerText = `${maxCount} tracks`;
+
       let currentMonth = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
 
       while (currentMonth >= new Date(earliestDate.getFullYear(), earliestDate.getMonth(), 1)) {
@@ -437,6 +465,9 @@
           const cell = document.createElement('div');
           cell.className = 'cal-cell';
 
+          const circleWrapper = document.createElement('div');
+          circleWrapper.className = 'circle-wrapper';
+
           const circle = document.createElement('div');
           circle.className = 'cal-circle';
 
@@ -448,52 +479,65 @@
             circle.classList.add('listened');
             circle.innerText = '✓';
 
-            // Hand-drawn Sunburst Rays for Peak Volume Day
-            if (coreData.peak_volume && dateStr === coreData.peak_volume.date) {
-              const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-              svg.setAttribute("class", "sunray-svg");
-              svg.setAttribute("viewBox", "0 0 52 52");
-              svg.innerHTML = `
-                <path d="M26 2 L26 8 M26 44 L26 50 M2 26 L8 26 M44 26 L50 26 M9 9 L13 13 M39 39 L43 43 M9 43 L13 39 M39 13 L43 9" 
-                      stroke="#ff007f" stroke-width="2.5" stroke-linecap="round"/>
+            // Explicit Sunburst SVG for Peak Volume Day
+            if (coreData && coreData.peak_volume && dateStr === coreData.peak_volume.date) {
+              const svgContainer = document.createElement('div');
+              svgContainer.innerHTML = `
+                <svg class="sunray-svg" viewBox="0 0 52 52">
+                  <line x1="26" y1="2" x2="26" y2="8" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                  <line x1="26" y1="44" x2="26" y2="50" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                  <line x1="2" y1="26" x2="8" y2="26" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                  <line x1="44" y1="26" x2="50" y2="26" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                  <line x1="9" y1="9" x2="13" y2="13" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                  <line x1="39" y1="39" x2="43" y2="43" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                  <line x1="9" y1="43" x2="13" y2="39" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                  <line x1="39" y1="13" x2="43" y2="9" stroke="#ff007f" stroke-width="3" stroke-linecap="round" />
+                </svg>
               `;
-              cell.appendChild(svg);
+              circleWrapper.appendChild(svgContainer.firstElementChild);
             }
 
-            // Streak Ribbon Layout in Binary Mode
-            if (currentMode === 'binary' && coreData.longest_streak &&
+            // Streak Ribbon Layout
+            if (currentMode === 'binary' && coreData && coreData.longest_streak &&
                 dateStr >= coreData.longest_streak.start_date && dateStr <= coreData.longest_streak.end_date) {
               
               const prevD = new Date(dayDate); prevD.setDate(prevD.getDate() - 1);
               const nextD = new Date(dayDate); nextD.setDate(nextD.getDate() + 1);
-              const hasPrev = (historyData[prevD.toISOString().split('T')[0]] || 0) > 0 && prevD.getDay() !== 0; 
-              const hasNext = (historyData[nextD.toISOString().split('T')[0]] || 0) > 0 && dayDate.getDay() !== 0;
+
+              const prevDateStr = prevD.toISOString().split('T')[0];
+              const nextDateStr = nextD.toISOString().split('T')[0];
+
+              const isPrevInStreak = prevDateStr >= coreData.longest_streak.start_date && (historyData[prevDateStr] || 0) > 0 && dayDate.getDay() !== 1;
+              const isNextInStreak = nextDateStr <= coreData.longest_streak.end_date && (historyData[nextDateStr] || 0) > 0 && dayDate.getDay() !== 0;
 
               const ribbon = document.createElement('div');
-              if (!hasPrev && hasNext) ribbon.className = 'ribbon-wrap start';
-              else if (hasPrev && hasNext) ribbon.className = 'ribbon-wrap middle';
-              else if (hasPrev && !hasNext) ribbon.className = 'ribbon-wrap end';
+              if (!isPrevInStreak && isNextInStreak) ribbon.className = 'ribbon-wrap start';
+              else if (isPrevInStreak && isNextInStreak) ribbon.className = 'ribbon-wrap middle';
+              else if (isPrevInStreak && !isNextInStreak) ribbon.className = 'ribbon-wrap end';
               else ribbon.className = 'ribbon-wrap single';
 
-              cell.appendChild(ribbon);
+              circleWrapper.appendChild(ribbon);
               circle.style.color = '#fff';
               circle.style.background = 'transparent';
               circle.style.border = 'none';
             }
 
-            // Tracks per Day Heatmap Mode Colors
+            // Heatmap mode
             if (currentMode === 'heatmap') {
               circle.innerText = count;
               circle.style.border = 'none';
-              if (count >= 15) circle.style.background = '#39d353';
-              else if (count >= 8) circle.style.background = '#26a641';
-              else if (count >= 4) circle.style.background = '#006d32';
-              else circle.style.background = '#0e4429';
               circle.style.color = '#fff';
+
+              const ratio = count / maxCount;
+              if (ratio >= 0.75) circle.style.background = '#39d353';
+              else if (ratio >= 0.50) circle.style.background = '#26a641';
+              else if (ratio >= 0.25) circle.style.background = '#006d32';
+              else circle.style.background = '#0e4429';
             }
           }
 
-          cell.appendChild(circle);
+          circleWrapper.appendChild(circle);
+          cell.appendChild(circleWrapper);
           cell.appendChild(dayNum);
           grid.appendChild(cell);
         }
@@ -504,13 +548,14 @@
       }
     }
 
-    // Modal Events & Toggles
     document.getElementById('open-history-btn').addEventListener('click', () => {
+      document.body.classList.add('modal-open');
       document.getElementById('history-modal').classList.add('open');
       renderCalendar();
     });
 
     document.getElementById('close-modal-btn').addEventListener('click', () => {
+      document.body.classList.remove('modal-open');
       document.getElementById('history-modal').classList.remove('open');
     });
 
@@ -530,7 +575,6 @@
       renderCalendar();
     });
 
-    // Execute Progressive Loading
     loadCoreTracker();
     loadFullHistory();
 
