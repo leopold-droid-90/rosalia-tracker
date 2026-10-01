@@ -1,26 +1,25 @@
-name: Spotify ROSALIA Tracker
+name: Rosalía Spotify Tracker
 
 on:
+  schedule:
+    - cron: '*/15 * * * *'
   repository_dispatch:
-    types: [check_spotify]   # Triggered by external cron service
-  workflow_dispatch:          # Manual trigger button in GitHub UI
+    types: [check_spotify]
+  workflow_dispatch:
 
 jobs:
-  track:
+  update-tracker:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
-      - name: Fetch Spotify Data
+      - name: Fetch Spotify Data and Update Stats
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
@@ -29,82 +28,201 @@ jobs:
           node -e '
           const fs = require("fs");
 
-          async function main() {
-            const authHeader = Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString("base64");
-            const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
+          async function getAccessToken() {
+            const res = await fetch("https://accounts.spotify.com/api/token", {
               method: "POST",
               headers: {
-                "Authorization": `Basic ${authHeader}`,
-                "Content-Type": "application/x-www-form-urlencoded"
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": "Basic " + Buffer.from(process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_CLIENT_SECRET).toString("base64")
               },
               body: new URLSearchParams({
                 grant_type: "refresh_token",
                 refresh_token: process.env.SPOTIFY_REFRESH_TOKEN
               })
             });
-            const tokenData = await tokenRes.json();
-            if (!tokenData.access_token) {
-              console.error("Failed to refresh access token", tokenData);
+            const data = await res.json();
+            return data.access_token;
+          }
+
+          async function run() {
+            try {
+              const token = await getAccessToken();
+              const spotifyRes = await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", {
+                headers: { "Authorization": "Bearer " + token }
+              });
+              const spotifyData = await spotifyRes.json();
+
+              if (!spotifyData.items || spotifyData.items.length === 0) {
+                console.log("No recently played tracks found.");
+                return;
+              }
+
+              // Load or initialize history.json
+              let history = {};
+              if (fs.existsSync("./history.json")) {
+                try { history = JSON.parse(fs.readFileSync("./history.json", "utf8")); } catch (e) {}
+              }
+
+              // Load or initialize last_played.json
+              let lastPlayedData = {};
+              if (fs.existsSync("./last_played.json")) {
+                try { lastPlayedData = JSON.parse(fs.readFileSync("./last_played.json", "utf8")); } catch (e) {}
+              }
+
+              let latestTrack = null;
+
+              // Filter for Rosalía tracks (Artist ID: 7ltDVBr6mKbRvohxheJ9h1 or search name)
+              const rosaliaItems = spotifyData.items.filter(item => 
+                item.track.artists.some(a => a.id === "7ltDVBr6mKbRvohxheJ9h1" || a.name.toLowerCase().includes("rosalía") || a.name.toLowerCase().includes("rosalia"))
+              );
+
+              if (rosaliaItems.length > 0) {
+                // Spotify items are newest first
+                const newestItem = rosaliaItems[0];
+                latestTrack = {
+                  timestamp: newestItem.played_at,
+                  track_name: newestItem.track.name,
+                  album_name: newestItem.track.album.name,
+                  album_art: newestItem.track.album.images[0]?.url || "",
+                  spotify_url: newestItem.track.external_urls?.spotify || "",
+                  album_url: newestItem.track.album.external_urls?.spotify || ""
+                };
+
+                // Ingest newly detected plays into history map
+                for (const item of rosaliaItems) {
+                  const dateStr = item.played_at.split("T")[0]; // YYYY-MM-DD
+                  if (!history[dateStr]) {
+                    history[dateStr] = { count: 0, tracks: [] };
+                  }
+                  if (!history[dateStr].tracks.includes(item.track.name)) {
+                    history[dateStr].tracks.push(item.track.name);
+                    history[dateStr].count += 1;
+                  }
+                }
+              }
+
+              // Preserve latest track if no new Rosalía track in this fetch
+              if (!latestTrack && lastPlayedData.latest_track) {
+                latestTrack = lastPlayedData.latest_track;
+              } else if (!latestTrack && lastPlayedData.timestamp) {
+                latestTrack = {
+                  timestamp: lastPlayedData.timestamp,
+                  track_name: lastPlayedData.track_name,
+                  album_name: lastPlayedData.album_name,
+                  album_art: lastPlayedData.album_art,
+                  spotify_url: lastPlayedData.spotify_url,
+                  album_url: lastPlayedData.album_url
+                };
+              }
+
+              // Sort history dates chronologically
+              const sortedDates = Object.keys(history).sort();
+
+              // Calculate Streaks
+              const todayStr = new Date().toISOString().split("T")[0];
+              const yesterdayObj = new Date();
+              yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+              const yesterdayStr = yesterdayObj.toISOString().split("T")[0];
+
+              let currentStreak = 0;
+              let checkDate = new Date();
+              
+              // Check if streak is active today or yesterday
+              if (!history[todayStr] && !history[yesterdayStr]) {
+                currentStreak = 0;
+              } else {
+                if (!history[todayStr]) {
+                  checkDate = yesterdayObj; // Count starting yesterday
+                }
+                while (true) {
+                  const dStr = checkDate.toISOString().split("T")[0];
+                  if (history[dStr] && history[dStr].count > 0) {
+                    currentStreak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                  } else {
+                    break;
+                  }
+                }
+              }
+
+              // Calculate Records across history
+              let longestStreak = lastPlayedData.longest_streak?.count || 0;
+              let longestStreakStart = lastPlayedData.longest_streak?.start_date || "";
+              let longestStreakEnd = lastPlayedData.longest_streak?.end_date || "";
+
+              let tempStreak = 0;
+              let tempStart = "";
+
+              for (let i = 0; i < sortedDates.length; i++) {
+                const curr = sortedDates[i];
+                if (i === 0) {
+                  tempStreak = 1;
+                  tempStart = curr;
+                } else {
+                  const prevDate = new Date(sortedDates[i - 1]);
+                  const currDate = new Date(curr);
+                  const diffDays = Math.round((currDate - prevDate) / (1000 * 60 * 60 * 24));
+
+                  if (diffDays === 1) {
+                    tempStreak++;
+                  } else {
+                    tempStreak = 1;
+                    tempStart = curr;
+                  }
+                }
+
+                if (tempStreak >= longestStreak) {
+                  longestStreak = tempStreak;
+                  longestStreakStart = tempStart;
+                  longestStreakEnd = curr;
+                }
+              }
+
+              // Peak Volume Record
+              let maxDailyTracks = lastPlayedData.peak_volume?.count || 0;
+              let maxDailyDate = lastPlayedData.peak_volume?.date || "";
+
+              for (const [dateStr, entry] of Object.entries(history)) {
+                if (entry.count > maxDailyTracks) {
+                  maxDailyTracks = entry.count;
+                  maxDailyDate = dateStr;
+                }
+              }
+
+              // Save history.json
+              fs.writeFileSync("./history.json", JSON.stringify(history, null, 2));
+
+              // Output last_played.json (~1KB light load file)
+              const outputData = {
+                current_streak: currentStreak,
+                longest_streak: {
+                  count: longestStreak,
+                  start_date: longestStreakStart,
+                  end_date: longestStreakEnd
+                },
+                peak_volume: {
+                  count: maxDailyTracks,
+                  date: maxDailyDate
+                },
+                latest_track: latestTrack
+              };
+
+              fs.writeFileSync("./last_played.json", JSON.stringify(outputData, null, 2));
+              console.log("Tracker update complete.");
+
+            } catch (err) {
+              console.error("Error running tracker update:", err);
               process.exit(1);
-            }
-
-            const spotifyRes = await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=20", {
-              headers: { "Authorization": `Bearer ${tokenData.access_token}` }
-            });
-            const spotifyData = await spotifyRes.json();
-
-            if (!spotifyData.items || spotifyData.items.length === 0) {
-              console.log("No recently played tracks found.");
-              return;
-            }
-
-            const rosaliaTrack = spotifyData.items.find(item => 
-              item.track.artists.some(artist => 
-                artist.name.toLowerCase().includes("rosalía") || 
-                artist.name.toLowerCase().includes("rosalia")
-              )
-            );
-
-            if (!rosaliaTrack) {
-              console.log("No ROSALÍA track found in recent list.");
-              return;
-            }
-
-            const newEntry = {
-              timestamp: rosaliaTrack.played_at,
-              track_name: rosaliaTrack.track.name,
-              album_name: rosaliaTrack.track.album.name,
-              album_art: rosaliaTrack.track.album.images[0]?.url || "",
-              spotify_url: rosaliaTrack.track.external_urls.spotify
-            };
-
-            let current = {};
-            if (fs.existsSync("last_played.json")) {
-              current = JSON.parse(fs.readFileSync("last_played.json", "utf8"));
-            }
-
-            const currentTimestamp = new Date(current.timestamp || 0).getTime();
-            const newTimestamp = new Date(newEntry.timestamp).getTime();
-
-            if (newTimestamp > currentTimestamp) {
-              console.log("New ROSALÍA track detected! Updating last_played.json...");
-              fs.writeFileSync("last_played.json", JSON.stringify(newEntry, null, 2));
-            } else {
-              console.log("Latest ROSALÍA track is already recorded.");
             }
           }
 
-          main().catch(err => {
-            console.error(err);
-            process.exit(1);
-          });
+          run();
           '
 
-      - name: Commit & Push Changes
+      - name: Commit and push changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add last_played.json
+          git add last_played.json history.json
           git status
-          git diff-index --quiet HEAD || git commit -m "update last_played.json [skip ci]"
-          git push
+          git diff-index --quiet HEAD || (git commit -m "Update tracker stats & history [skip ci]" && git push)
