@@ -10,11 +10,11 @@
     "date": "2026-09-30"
   },
   "latest_track": {
-    "timestamp": "2026-10-01T09:48:32.301Z",
-    "track_name": "Berghain",
+    "timestamp": "2026-10-01T09:58:51.457Z",
+    "track_name": "Dios Es Un Stalker (versión Francotiradora)",
     "album_name": "LUX (Complete Works)",
     "album_art": "https://i.scdn.co/image/ab67616d0000b2732b497f6bf340faa8812b940c",
-    "spotify_url": "https://open.spotify.com/track/6ZBJc582Szb5UGV3VDgrkh",
+    "spotify_url": "https://open.spotify.com/track/55VfayiDkGUTyFE5M3mUFO",
     "album_url": "https://open.spotify.com/album/3goLwu2fkSSmghikOcVufU"
   },
   "tracked_timestamps": [
@@ -71,6 +71,10 @@
     "2026-10-01T09:32:50.512Z",
     "2026-10-01T09:48:32.301Z",
     "2026-10-01T09:45:32.895Z",
-    "2026-10-01T09:41:02.721Z"
+    "2026-10-01T09:41:02.721Z",
+    "2026-10-01T09:58:51.457Z",
+    "2026-10-01T09:55:53.877Z",
+    "2026-10-01T09:54:09.016Z",
+    "2026-10-01T09:51:48.192Z"
   ]
 }
