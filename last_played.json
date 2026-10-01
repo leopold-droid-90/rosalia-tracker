@@ -1,13 +1,13 @@
 {
-  "current_streak": 0,
+  "current_streak": 1,
   "longest_streak": {
-    "count": 0,
-    "start_date": "",
-    "end_date": ""
+    "count": 2,
+    "start_date": "2026-09-27",
+    "end_date": "2026-09-28"
   },
   "peak_volume": {
-    "count": 0,
-    "date": ""
+    "count": 17,
+    "date": "2026-09-30"
   },
   "latest_track": {
     "timestamp": "2026-09-30T20:47:24.114Z",
@@ -15,6 +15,6 @@
     "album_name": "LUX",
     "album_art": "https://i.scdn.co/image/ab67616d0000b27393ee2e2f2dfb7de9befcc164",
     "spotify_url": "https://open.spotify.com/track/4ukpy7Q6QmrB7ttNMSAcG2",
-    "album_url": "https://open.spotify.com/artist/7ltDVBr6mKbRvohxheJ9h1",
+    "album_url": "https://open.spotify.com/album/3SUEJULSGgBDG1j4GQhfYY"
   }
 }
