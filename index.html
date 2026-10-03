@@ -13,7 +13,7 @@
       --color-magenta: #ff007f;
       --spotify-green: #1db954;
       --text-sub: #d0d0d0;
-      --card-bg: rgba(18, 18, 18, 0.85);
+      --card-bg: rgba(18, 18, 18, 0.7);
       --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -32,7 +32,7 @@
     .bg-blur {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background-size: cover; background-position: center;
-      filter: blur(24px) brightness(0.45); transform: scale(1.15);
+      filter: blur(24px) brightness(0.6); transform: scale(1.15);
       z-index: -1; opacity: 0; transition: opacity 1.8s ease-in-out;
     }
     .bg-blur.loaded { opacity: 1; }
@@ -73,9 +73,11 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* MOBILE SPECIFIC OVERRIDES */
     @media (max-width: 600px) {
       body { padding: 1rem; align-items: flex-start; }
       .card { background: transparent; border: none; box-shadow: none; padding: 1rem 0; }
+      .bg-blur { filter: blur(24px) brightness(0.30) !important; }
     }
 
     .cover-art {
@@ -100,10 +102,18 @@
     .strip-days { display: flex; justify-content: space-between; align-items: center; }
     .day-node { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 
-    .records-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.2rem 0 1.8rem; }
+    .records-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1.2rem 0 1.5rem; }
+    
+    /* RECORD CARDS AS CLICKABLE BUTTONS */
     .record-card {
       background: rgba(255, 255, 255, 0.05); padding: 0.9rem;
       border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); text-align: left;
+      cursor: pointer; transition: all 0.2s ease; user-select: none;
+    }
+    .record-card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
     }
     .record-label { font-size: 0.75rem; color: var(--text-sub); margin-bottom: 4px; }
     .record-value { font-size: 1.1rem; font-weight: 800; }
@@ -117,13 +127,6 @@
       box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
     }
     .spotify-btn:hover { transform: scale(1.03); background: #f0f0f0; }
-    
-    .history-btn {
-      display: block; background: transparent; color: var(--color-white);
-      border: 1px solid rgba(255, 255, 255, 0.3); font-weight: 600; font-size: 0.9rem;
-      padding: 0.75rem; border-radius: 50px; cursor: pointer; transition: all 0.2s ease;
-    }
-    .history-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--color-white); }
 
     .track-info {
       font-size: 0.9rem; line-height: 1.5; color: var(--text-sub);
@@ -180,7 +183,6 @@
       flex: 1; overflow-y: auto; padding: 1rem 1.5rem 5rem 1.5rem;
     }
 
-    /* WEEK ROW WITH SEAMLESS RIBBON OVERLAY */
     .week-row {
       position: relative;
       display: grid;
@@ -258,13 +260,14 @@
       <div id="strip-days" class="strip-days"></div>
     </div>
 
+    <!-- RECORDS NOW ACT AS DIRECT LINKS TO THE MODAL TABS -->
     <div class="records-grid">
-      <div class="record-card">
+      <div id="card-streak-btn" class="record-card">
         <div class="record-label">🔥 Longest Streak</div>
         <div id="record-streak-val" class="record-value">-</div>
         <div id="record-streak-sub" class="record-sub">No record yet</div>
       </div>
-      <div class="record-card">
+      <div id="card-volume-btn" class="record-card">
         <div class="record-label">👑 Most tracks in a day</div>
         <div id="record-volume-val" class="record-value">-</div>
         <div id="record-volume-sub" class="record-sub">No record yet</div>
@@ -275,7 +278,6 @@
       <a href="https://open.spotify.com/artist/7ltDVBr6mKbRvohxheJ9h1" target="_blank" rel="noopener" class="spotify-btn">
         Listen to ROSALÍA now
       </a>
-      <button id="open-history-btn" class="history-btn">View Full History Calendar</button>
     </div>
 
     <p id="track-info" class="track-info">Fetching last recorded song...</p>
@@ -463,17 +465,8 @@
       }
     }
 
-    /* RENDER CALENDAR WITH UNIFIED ROW STREAK GRADIENT SHAPES */
     function renderCalendar() {
       const container = document.getElementById('calendar-container');
-      
-      // FIXED DATE SORTING (CHRONOLOGICAL OBJECT KEY SORTING)
-      const sortedDates = Object.keys(historyData).sort((a, b) => new Date(a) - new Date(b));
-      if (sortedDates.length === 0) {
-        container.innerText = "No history recorded.";
-        return;
-      }
-
       container.innerHTML = '';
 
       let maxCount = coreData.peak_volume ? coreData.peak_volume.count : 1;
@@ -482,13 +475,13 @@
       }
       document.getElementById('legend-max-label').innerText = `${maxCount} tracks`;
 
-      const startDate = new Date(sortedDates[0]);
-      const endDate = new Date(sortedDates[sortedDates.length - 1]);
+      // CAPPED RANGE: SEPTEMBER 27 TO TODAY
+      const startDate = new Date(2026, 8, 27); // Sept 27, 2026
+      const endDate = new Date(); // Current date (e.g. Oct 3)
 
       let curr = new Date(startDate);
       const allDays = [];
 
-      // Align initial offset to Monday (1)
       let startOffset = curr.getDay() - 1;
       if (startOffset === -1) startOffset = 6;
 
@@ -501,7 +494,6 @@
         curr.setDate(curr.getDate() + 1);
       }
 
-      // Group days by 7-day week rows
       for (let i = 0; i < allDays.length; i += 7) {
         const weekDays = allDays.slice(i, i + 7);
         const weekRow = document.createElement('div');
@@ -538,7 +530,6 @@
 
         if (activeSegment) streakSegments.push(activeSegment);
 
-        // Render seamless unified gradient background shapes for consecutive streak days
         streakSegments.forEach(seg => {
           const ribbon = document.createElement('div');
           ribbon.className = 'unified-streak-ribbon';
@@ -551,7 +542,6 @@
           weekRow.appendChild(ribbon);
         });
 
-        // Render cells
         weekDays.forEach((dayObj) => {
           const cell = document.createElement('div');
           cell.style.display = 'flex';
@@ -652,14 +642,28 @@
 
     document.getElementById('modal-scroll-body').addEventListener('scroll', updateStickyMonthHeader);
 
-    document.getElementById('open-history-btn').addEventListener('click', () => {
+    function openModalWithMode(mode) {
+      currentMode = mode;
+      if (mode === 'binary') {
+        document.getElementById('toggle-binary').classList.add('active');
+        document.getElementById('toggle-heatmap').classList.remove('active');
+        document.getElementById('heatmap-legend').classList.remove('active');
+      } else {
+        document.getElementById('toggle-heatmap').classList.add('active');
+        document.getElementById('toggle-binary').classList.remove('active');
+        document.getElementById('heatmap-legend').classList.add('active');
+      }
+
       document.body.classList.add('modal-open');
       document.getElementById('history-modal').classList.add('open');
       renderCalendar();
       
       const scrollBody = document.getElementById('modal-scroll-body');
       scrollBody.scrollTop = scrollBody.scrollHeight;
-    });
+    }
+
+    document.getElementById('card-streak-btn').addEventListener('click', () => openModalWithMode('binary'));
+    document.getElementById('card-volume-btn').addEventListener('click', () => openModalWithMode('heatmap'));
 
     function closeModal() {
       document.body.classList.remove('modal-open');
